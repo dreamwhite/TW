@@ -46,11 +46,7 @@ if (demoMode && demoNotice) {
   demoNotice.classList.remove('d-none');
 }
 
-if (!demoMode) {
-  initSetupStatus();
-} else {
-  showSetupLinks(false);
-}
+bootstrap();
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -395,15 +391,7 @@ function handleLoginSuccess(data) {
   if (!state.demoMode) {
     setToken(data.access_token);
   }
-  state.user = data.email;
-
-  toggleAppView(true);
-  setUserEmail(data.email);
-  refreshButton.disabled = false;
-  flashApp(state.demoMode ? `Demo attiva per ${data.email}` : `Autenticato come ${data.email}`, 'success');
-
-  loadMessages();
-  connectWebSocket();
+  enterApp(data.email);
 }
 
 async function initSetupStatus() {
@@ -412,5 +400,54 @@ async function initSetupStatus() {
   showSetupLinks(status.setupRequired);
   if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {
     window.location.href = '/setup.html';
+  }
+  return status;
+}
+
+async function resumeSession() {
+  try {
+    const response = await fetch('/api/status/me', {
+      headers: { Authorization: `Bearer ${state.token}` },
+    });
+    if (!response.ok) {
+      throw new Error('Sessione non valida');
+    }
+    const payload = await response.json();
+    const email = payload.email || payload.user || (payload.claims && payload.claims.sub) || 'utente';
+    enterApp(email, { silent: true });
+  } catch (error) {
+    console.warn('Sessione non più valida, richiesto nuovo login');
+    clearToken();
+    state.token = null;
+  }
+}
+
+function enterApp(email, { silent = false } = {}) {
+  state.user = email;
+
+  toggleAppView(true);
+  setUserEmail(email);
+  refreshButton.disabled = false;
+  if (!silent) {
+    flashApp(state.demoMode ? `Demo attiva per ${email}` : `Autenticato come ${email}`, 'success');
+  }
+
+  loadMessages();
+  connectWebSocket();
+}
+
+async function bootstrap() {
+  if (state.demoMode) {
+    showSetupLinks(false);
+    return;
+  }
+
+  const status = await initSetupStatus();
+  if (status.setupRequired) {
+    return;
+  }
+
+  if (state.token) {
+    await resumeSession();
   }
 }
