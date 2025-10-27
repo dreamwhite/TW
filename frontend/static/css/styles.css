@@ -1,0 +1,114 @@
+body {
+    min-height: 100vh;
+}
+
+#loginView {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(25, 135, 84, 0.1));
+}
+
+#statusBadge {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-offline {
+    background-color: #dc3545 !important;
+}
+
+.badge-online {
+    background-color: #198754 !important;
+}
+
+.badge-connecting {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+table td {
+    vertical-align: middle;
+}
+
+.payload-json {
+    font-family: "Fira Mono", "Courier New", monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.sensor-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+.sensor-icon.humidity {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+}
+
+.sensor-icon.temperature {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+}
+
+.sensor-icon.presence {
+    background: linear-gradient(135deg, #198754, #20c997);
+}
+
+.app-shell {
+    min-height: calc(100vh - 56px);
+    background-color: var(--bs-body-bg);
+}
+
+.sidebar {
+    flex: 0 0 240px;
+}
+
+.sidebar-heading {
+    letter-spacing: 0.08em;
+}
+
+.sidebar-nav .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: rgba(13, 110, 253, 0.08);
+    color: #0d6efd;
+}
+
+.sidebar-nav .nav-link.active {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.9), rgba(32, 201, 151, 0.9));
+    color: #fff;
+    box-shadow: 0 0.4rem 0.9rem rgba(13, 110, 253, 0.15);
+}
+
+.sidebar-nav .nav-link.active i {
+    color: inherit;
+}
+
+.app-content {
+    background-color: transparent;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        flex: 0 0 auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .sidebar-nav .nav-link {
+        border-radius: 999px;
+    }
+}

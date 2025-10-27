@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-gateway}
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    restart: unless-stopped
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ./mqtt/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "1883:1883"
+
+  backend:
+    build:
+      context: ./services/api
+    depends_on:
+      - mongo
+      - mqtt
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  mosquitto_data:
+  mosquitto_log:

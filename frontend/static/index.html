@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gateway WebSocket ⇄ MQTT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-7V8WohE2Abb+4wCjNG98Rr6xciMghvYDnCetJ2Pp8lQDxz8awWEfduLdM6+qO5pz50jdK4Zk2gq1hF8+BM3G7w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-body-tertiary">
+    <div id="loginView" class="min-vh-100 d-flex align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-5">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h1 class="h4 text-center mb-3">Gateway MQTT</h1>
+                            <p class="text-secondary text-center mb-4">
+                                Accedi con le tue credenziali per utilizzare il bridge WebSocket ⇄ MQTT.
+                            </p>
+                            <div class="alert alert-info d-none" id="demoNotice" role="alert">
+                                Modalità demo attiva: nessuna chiamata verso il backend, dati fittizi.
+                            </div>
+                            <form id="loginForm" class="row g-3">
+                                <div class="col-12">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" placeholder="admin@example.com" required />
+                                </div>
+                                <div class="col-12">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" placeholder="********" required />
+                                </div>
+                                <div class="col-12 d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        Entra
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="alert alert-danger d-none mt-3" id="loginError" role="alert"></div>
+                        </div>
+                    </div>
+                    <p class="text-center text-muted small mt-3">
+                        Utente demo: <code>admin@example.com</code> / <code>admin123</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appView" class="d-none">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <span class="navbar-brand">Tecnologie Web · Gateway</span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <span id="statusBadge" class="badge text-bg-secondary">offline</span>
+                    <span class="text-white-50 small" id="userEmail"></span>
+                    <button class="btn btn-outline-light btn-sm" id="logoutButton">
+                        Esci
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="app-shell d-flex flex-column flex-lg-row">
+            <aside class="sidebar border-end bg-white">
+                <div class="sidebar-body p-3">
+                    <div class="sidebar-heading text-uppercase text-muted small mb-3">Navigazione</div>
+                    <nav class="nav flex-row flex-lg-column sidebar-nav gap-2">
+                    <a class="nav-link active" href="/index.html">
+                            <i class="fa-solid fa-chart-line me-2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a class="nav-link" href="/sensors.html">
+                            <i class="fa-solid fa-gauge me-2"></i>
+                            <span>Sensori</span>
+                        </a>
+                        <a class="nav-link" href="#messages">
+                            <i class="fa-solid fa-envelope-open-text me-2"></i>
+                            <span>Log messaggi</span>
+                        </a>
+                        <a class="nav-link nav-setup d-none" href="/setup.html">
+                            <i class="fa-solid fa-gear me-2"></i>
+                            <span>Prima configurazione</span>
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="app-content flex-grow-1">
+                <div class="container py-4">
+                    <div id="appAlerts" class="alert d-none" role="alert"></div>
+                    <section class="card border-0 shadow-sm mb-4" id="publish">
+                        <div class="card-header bg-white">
+                            <h2 class="h5 mb-0">Pubblica messaggi</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="publishForm" class="row g-3 align-items-end">
+                                <div class="col-12 col-lg-4">
+                                    <label for="topic" class="form-label">Topic</label>
+                                    <input type="text" class="form-control" id="topic" placeholder="gateway/out" />
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <label for="payload" class="form-label">Payload (JSON o testo)</label>
+                                    <input type="text" class="form-control" id="payload" placeholder='{"command": "open"}' required />
+                                </div>
+                                <div class="col-12 col-lg-2 d-grid">
+                                    <button type="submit" class="btn btn-success">Invia</button>
+                                </div>
+                            </form>
+                            <p class="text-muted small mt-3 mb-0">
+                                Il messaggio viene inviato al broker MQTT e notificato in tempo reale ai client collegati.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="card border-0 shadow-sm" id="messages">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0">Ultimi messaggi</h2>
+                            <button class="btn btn-outline-secondary btn-sm" id="refreshButton" disabled>Ricarica</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Direzione</th>
+                                            <th scope="col">Topic</th>
+                                            <th scope="col">Payload</th>
+                                            <th scope="col">Ricevuto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="messageTableBody">
+                                        <tr class="text-muted">
+                                            <td colspan="4" class="text-center p-4">Nessun messaggio da mostrare.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/js/app.js" type="module"></script>
+</body>
+</html>
