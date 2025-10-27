@@ -1,3 +1,5 @@
+import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks } from './shared.js';
+
 const urlParams = new URLSearchParams(window.location.search);
 const demoMode = urlParams.get('demo') === '1';
 
@@ -16,10 +18,8 @@ const DEMO_MESSAGES = [
   },
 ];
 
-import { ensureConfigured, setToken, showSetupLinks } from './shared.js';
-
 const state = {
-  token: null,
+  token: demoMode ? null : getToken(),
   socket: null,
   user: null,
   demoMode,
@@ -48,6 +48,8 @@ if (demoMode && demoNotice) {
 
 if (!demoMode) {
   initSetupStatus();
+} else {
+  showSetupLinks(false);
 }
 
 loginForm.addEventListener('submit', async (event) => {
@@ -366,6 +368,9 @@ function logout() {
   state.token = null;
   state.socket = null;
   state.user = null;
+  if (!state.demoMode) {
+    clearToken();
+  }
 
   setUserEmail('');
   updateConnectionStatus('offline', 'offline');
@@ -387,6 +392,9 @@ window.addEventListener('beforeunload', () => {
 
 function handleLoginSuccess(data) {
   state.token = data.access_token;
+  if (!state.demoMode) {
+    setToken(data.access_token);
+  }
   state.user = data.email;
 
   toggleAppView(true);
@@ -398,17 +406,8 @@ function handleLoginSuccess(data) {
   connectWebSocket();
 }
 
-async function ensureConfigured() {
-  const status = await ensureConfigured();
-  state.setupRequired = status.setupRequired;
-  showSetupLinks(status.setupRequired);
-  if (status.setupRequired && !window.location.pathname.includes('/setup.html')) {
-    window.location.href = '/setup.html';
-  }
-}
-
 async function initSetupStatus() {
-  const status = await ensureConfigured();
+  const status = await fetchSetupStatus();
   state.setupRequired = status.setupRequired;
   showSetupLinks(status.setupRequired);
   if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {

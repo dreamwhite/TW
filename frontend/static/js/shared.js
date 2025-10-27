@@ -12,6 +12,18 @@ export async function ensureConfigured() {
   }
 }
 
+export function getToken() {
+  return sessionStorage.getItem('gatewayToken');
+}
+
+export function setToken(token) {
+  sessionStorage.setItem('gatewayToken', token);
+}
+
+export function clearToken() {
+  sessionStorage.removeItem('gatewayToken');
+}
+
 export function showSetupLinks(show) {
   const links = document.querySelectorAll('.nav-setup');
   links.forEach((link) => link.classList.toggle('d-none', !show));
