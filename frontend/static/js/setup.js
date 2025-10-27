@@ -1,17 +1,16 @@
+import { ensureConfigured, showSetupLinks } from './shared.js';
+
 const form = document.querySelector('#setupForm');
 const alertBox = document.querySelector('#setupAlert');
 const demoSwitch = document.querySelector('#demoSwitch');
 
-async function fetchStatus() {
-  try {
-    const response = await fetch('/api/setup/status');
-    if (!response.ok) return;
-    const payload = await response.json();
-    if (payload.configured) {
-      window.location.href = '/index.html';
-    }
-  } catch (error) {
-    console.error('Errore nel recupero dello stato setup', error);
+init();
+
+async function init() {
+  const status = await ensureConfigured();
+  showSetupLinks(status.setupRequired);
+  if (!status.setupRequired) {
+    window.location.href = '/index.html';
   }
 }
 
@@ -64,5 +63,3 @@ function showAlert(message, type) {
 function hideAlert() {
   alertBox.classList.add('d-none');
 }
-
-fetchStatus();

@@ -16,6 +16,8 @@ const DEMO_MESSAGES = [
   },
 ];
 
+import { ensureConfigured, setToken, showSetupLinks } from './shared.js';
+
 const state = {
   token: null,
   socket: null,
@@ -37,7 +39,6 @@ const statusBadge = document.querySelector('#statusBadge');
 const userEmailLabel = document.querySelector('#userEmail');
 const logoutButton = document.querySelector('#logoutButton');
 const appAlerts = document.querySelector('#appAlerts');
-const setupNavLinks = document.querySelectorAll('.nav-setup');
 
 const API_BASE = '/api';
 
@@ -46,7 +47,7 @@ if (demoMode && demoNotice) {
 }
 
 if (!demoMode) {
-  ensureConfigured();
+  initSetupStatus();
 }
 
 loginForm.addEventListener('submit', async (event) => {
@@ -398,26 +399,19 @@ function handleLoginSuccess(data) {
 }
 
 async function ensureConfigured() {
-  try {
-    const response = await fetch('/api/setup/status');
-    if (!response.ok) {
-      setSetupLinksVisible(false);
-      return;
-    }
-    const payload = await response.json();
-    state.setupRequired = !payload.configured;
-    setSetupLinksVisible(state.setupRequired);
-    if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {
-      window.location.href = '/setup.html';
-    }
-  } catch (error) {
-    console.error('Impossibile verificare lo stato di setup', error);
-    setSetupLinksVisible(false);
+  const status = await ensureConfigured();
+  state.setupRequired = status.setupRequired;
+  showSetupLinks(status.setupRequired);
+  if (status.setupRequired && !window.location.pathname.includes('/setup.html')) {
+    window.location.href = '/setup.html';
   }
 }
 
-function setSetupLinksVisible(show) {
-  setupNavLinks.forEach((link) => {
-    link.classList.toggle('d-none', !show);
-  });
+async function initSetupStatus() {
+  const status = await ensureConfigured();
+  state.setupRequired = status.setupRequired;
+  showSetupLinks(status.setupRequired);
+  if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {
+    window.location.href = '/setup.html';
+  }
 }
