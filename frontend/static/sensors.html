@@ -22,6 +22,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="/sensors.html"><i class="fa-solid fa-gauge"></i> Sensori</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text"></i> Log messaggi</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -32,140 +35,112 @@
             <div class="sidebar-body p-3">
                 <div class="sidebar-heading text-uppercase text-muted small mb-3">Navigazione</div>
                 <nav class="nav flex-row flex-lg-column sidebar-nav gap-2">
-                    <a class="nav-link" href="/index.html">
-                        <i class="fa-solid fa-chart-line me-2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a class="nav-link active" href="/sensors.html">
-                        <i class="fa-solid fa-gauge me-2"></i>
-                        <span>Sensori</span>
-                    </a>
-                    <a class="nav-link" href="/index.html#messages">
-                        <i class="fa-solid fa-envelope-open-text me-2"></i>
-                        <span>Log messaggi</span>
-                    </a>
-                    <a class="nav-link nav-setup d-none" href="/setup.html">
-                        <i class="fa-solid fa-gear me-2"></i>
-                        <span>Prima configurazione</span>
-                    </a>
+                    <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
+                    <a class="nav-link active" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>Sensori</span></a>
+                    <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Log messaggi</span></a>
+                    <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Prima configurazione</span></a>
                 </nav>
             </div>
         </aside>
 
         <main class="app-content flex-grow-1">
             <div class="container py-4">
-                <header class="mb-4">
-                    <h1 class="h3 mb-2">Mappa sensori ambiente</h1>
-                    <p class="text-muted mb-0">Panoramica sintetica dei sensori monitorati dal gateway, raggruppati per tipologia.</p>
+                <header class="mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-2">Sensori MQTT</h1>
+                        <p class="text-muted mb-0">Gestisci i sensori monitorati dal gateway: puoi simulare dati demo o configurare sensori reali.</p>
+                    </div>
+                    <button class="btn btn-primary" id="newSensorButton">
+                        <i class="fa-solid fa-plus"></i> Aggiungi sensore
+                    </button>
                 </header>
 
-                <section class="mb-5">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="sensor-icon humidity"><i class="fa-solid fa-droplet"></i></span>
-                        <h2 class="h4 mb-0">Sensori di Umidità</h2>
-                    </div>
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Serra #1</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Serra principale</p>
-                                    <p class="display-6 fw-bold text-primary">68<span class="fs-5">%</span></p>
-                                    <p class="small text-muted mb-3">Ultimo aggiornamento: 2 min fa</p>
-                                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Operativo</span>
+                <div id="sensorsAlert" class="alert d-none" role="alert"></div>
+
+                <section class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <form id="sensorForm" class="row g-3">
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="sensorName" class="form-label">Nome sensore</label>
+                                <input type="text" class="form-control" id="sensorName" placeholder="Temperatura sala" required />
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="sensorTopic" class="form-label">Topic MQTT</label>
+                                <input type="text" class="form-control" id="sensorTopic" placeholder="gateway/sensors/temp" required />
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-2">
+                                <label for="sensorUnit" class="form-label">Unità</label>
+                                <input type="text" class="form-control" id="sensorUnit" placeholder="°C" />
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-2">
+                                <label for="sensorIcon" class="form-label">Icona (Font Awesome)</label>
+                                <input type="text" class="form-control" id="sensorIcon" placeholder="fa-solid fa-temperature-half" />
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-2">
+                                <label for="sensorType" class="form-label">Tipologia</label>
+                                <select class="form-select" id="sensorType">
+                                    <option value="generic">Generico</option>
+                                    <option value="temperature">Temperatura</option>
+                                    <option value="humidity">Umidità</option>
+                                    <option value="presence">Presenza</option>
+                                    <option value="custom">Personalizzato</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <div class="form-check form-switch mt-4 pt-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="sensorDemoData">
+                                    <label class="form-check-label" for="sensorDemoData">Visualizza con dati demo</label>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Magazzino</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Area stoccaggio</p>
-                                    <p class="display-6 fw-bold text-primary">54<span class="fs-5">%</span></p>
-                                    <p class="small text-muted mb-3">Ultimo aggiornamento: 6 min fa</p>
-                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Soglia in avvicinamento</span>
-                                </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="sensorDescription" class="form-label">Descrizione</label>
+                                <input type="text" class="form-control" id="sensorDescription" placeholder="Sonda in sala riunioni" />
                             </div>
-                        </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="sensorThreshold" class="form-label">Soglia avviso</label>
+                                <input type="number" step="any" class="form-control" id="sensorThreshold" placeholder="es. 28" />
+                            </div>
+                            <div class="col-12 col-lg-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salva sensore
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </section>
 
-                <section class="mb-5">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="sensor-icon temperature"><i class="fa-solid fa-temperature-half"></i></span>
-                        <h2 class="h4 mb-0">Sensori di Temperatura</h2>
-                    </div>
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Server Room</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Piano -1</p>
-                                    <p class="display-6 fw-bold text-danger">27<span class="fs-5">°C</span></p>
-                                    <p class="small text-muted mb-3">Ultimo aggiornamento: 1 min fa</p>
-                                    <span class="badge bg-danger"><i class="fa-solid fa-fire me-1"></i> Sopra soglia</span>
-                                </div>
+                <section class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="h5 mb-0">Sensori registrati</h2>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm" id="sensorsRefresh">
+                                    <i class="fa-solid fa-rotate"></i> Aggiorna
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" id="sensorsDemoToggle">
+                                    <i class="fa-solid fa-vial"></i> Attiva demo
+                                </button>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Ufficio</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Piano terra</p>
-                                    <p class="display-6 fw-bold text-primary">21<span class="fs-5">°C</span></p>
-                                    <p class="small text-muted mb-3">Ultimo aggiornamento: 3 min fa</p>
-                                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Operativo</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="mb-5">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="sensor-icon presence"><i class="fa-solid fa-person-walking"></i></span>
-                        <h2 class="h4 mb-0">Sensori di Presenza</h2>
-                    </div>
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Ingresso principale</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Atrio</p>
-                                    <div class="d-flex align-items-center gap-2 mb-3">
-                                        <span class="badge bg-success"><i class="fa-solid fa-wave-square me-1"></i> Nessun movimento</span>
-                                        <span class="small text-muted">Ultimo evento: 5 min fa</span>
-                                    </div>
-                                    <p class="small text-muted mb-0">MQTT topic: <code>gateway/presence/entrance</code></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h3 class="h5">Laboratorio</h3>
-                                    <p class="text-muted mb-2"><i class="fa-solid fa-location-dot text-primary"></i> Piano 1</p>
-                                    <div class="d-flex align-items-center gap-2 mb-3">
-                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-person-running me-1"></i> Movimento rilevato</span>
-                                        <span class="small text-muted">Ultimo evento: 30 sec fa</span>
-                                    </div>
-                                    <p class="small text-muted mb-0">MQTT topic: <code>gateway/presence/lab</code></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="mb-5">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h2 class="h5 mb-3"><i class="fa-solid fa-link me-2 text-primary"></i> Integrazione con il gateway</h2>
-                            <p class="mb-2">Ogni categoria di sensori pubblica sotto un prefisso dedicato:</p>
-                            <ul class="list-unstyled mb-0">
-                                <li><i class="fa-solid fa-droplet text-primary me-2"></i><code>gateway/sensors/humidity/&lt;id&gt;</code></li>
-                                <li><i class="fa-solid fa-temperature-half text-danger me-2"></i><code>gateway/sensors/temperature/&lt;id&gt;</code></li>
-                                <li><i class="fa-solid fa-person-walking text-success me-2"></i><code>gateway/presence/&lt;id&gt;</code></li>
-                            </ul>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Nome</th>
+                                        <th scope="col">Topic</th>
+                                        <th scope="col">Unità</th>
+                                        <th scope="col">Icona</th>
+                                        <th scope="col">Tipologia</th>
+                                        <th scope="col">Soglia</th>
+                                        <th scope="col" class="text-end">Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sensorsTableBody">
+                                    <tr class="text-muted">
+                                        <td colspan="7" class="text-center p-4">Nessun sensore configurato.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </section>
@@ -173,6 +148,7 @@
         </main>
     </div>
 
+    <script src="/js/sensors.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

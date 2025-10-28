@@ -1,4 +1,4 @@
-import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks } from './shared.js';
+import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks, enableDemoMode } from './shared.js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const demoMode = urlParams.get('demo') === '1';
@@ -39,6 +39,7 @@ const statusBadge = document.querySelector('#statusBadge');
 const userEmailLabel = document.querySelector('#userEmail');
 const logoutButton = document.querySelector('#logoutButton');
 const appAlerts = document.querySelector('#appAlerts');
+const demoToggleButton = document.querySelector('#demoToggleButton');
 
 const API_BASE = '/api';
 
@@ -47,6 +48,12 @@ if (demoMode && demoNotice) {
 }
 
 bootstrap();
+
+if (demoToggleButton) {
+  demoToggleButton.addEventListener('click', () => {
+    enableDemoMode();
+  });
+}
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();

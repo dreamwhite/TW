@@ -28,3 +28,9 @@ export function showSetupLinks(show) {
   const links = document.querySelectorAll('.nav-setup');
   links.forEach((link) => link.classList.toggle('d-none', !show));
 }
+
+export function enableDemoMode() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('demo', '1');
+  window.location.href = url.toString();
+}
