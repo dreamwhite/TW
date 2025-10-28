@@ -9,22 +9,11 @@ services:
     ports:
       - "27017:27017"
 
-  mqtt:
-    image: eclipse-mosquitto:2.0
-    restart: unless-stopped
-    volumes:
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
-      - ./mqtt/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-    ports:
-      - "1883:1883"
-
   backend:
     build:
       context: ./services/api
     depends_on:
       - mongo
-      - mqtt
     env_file:
       - .env
     restart: unless-stopped
@@ -42,5 +31,3 @@ services:
 
 volumes:
   mongo_data:
-  mosquitto_data:
-  mosquitto_log:

@@ -12,8 +12,9 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
 
 - `services/api`: codice del backend Flask modulare (auth, MQTT, WebSocket, servizi)
 - `frontend`: asset statici e Dockerfile di Nginx per servire l'interfaccia
-- `mqtt/config`: configurazione minimale per il broker Mosquitto
-- `docker-compose.yml`: orchestrazione completa (MongoDB, MQTT, backend, frontend)
+- `docker-compose.yml`: orchestrazione completa (MongoDB, backend, frontend)
+
+> Nota: il gateway si aspetta un broker MQTT già disponibile in rete. Configura host/porta dal wizard iniziale oppure tramite variabili d'ambiente.
 - `.env.example`: variabili d'ambiente richieste dal backend
 
 ## Avvio rapido
@@ -78,13 +79,13 @@ In ricezione vengono inviati messaggi JSON con `type` (`connected`, `mqtt_messag
 
 ### Test rapido interfaccia web
 
-Per provare solo la parte web (login + dashboard) è sufficiente avviare backend, frontend e MongoDB:
+Per provare la parte web (login + dashboard) è sufficiente avviare backend, frontend e MongoDB:
 
 ```bash
 docker compose up --build frontend backend mongo
 ```
 
-Il servizio MQTT è facoltativo per il login ma necessario se vuoi verificare l'inoltro dei messaggi.
+Collega il backend al tuo broker MQTT (interno o esterno) dal wizard di setup per testare l'inoltro dei messaggi.
 
 ### Modalità demo (solo frontend, nessun backend)
 

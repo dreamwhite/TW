@@ -419,6 +419,7 @@ async function resumeSession() {
     console.warn('Sessione non più valida, richiesto nuovo login');
     clearToken();
     state.token = null;
+    toggleAppView(false);
   }
 }
 
@@ -439,15 +440,21 @@ function enterApp(email, { silent = false } = {}) {
 async function bootstrap() {
   if (state.demoMode) {
     showSetupLinks(false);
+    toggleAppView(false);
     return;
   }
 
   const status = await initSetupStatus();
   if (status.setupRequired) {
+    toggleAppView(false);
     return;
   }
 
   if (state.token) {
     await resumeSession();
+  }
+
+  if (!state.token) {
+    toggleAppView(false);
   }
 }

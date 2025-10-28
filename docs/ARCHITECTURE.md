@@ -6,8 +6,9 @@ Lo stack è composto da quattro container principali orchestrati tramite Docker 
 
 - **frontend** (Nginx): serve l'interfaccia statica e funge da reverse proxy per API REST e WebSocket (`/api` e `/ws`).
 - **backend** (Flask): espone API JSON con autenticazione JWT, gestisce le sessioni WebSocket e incapsula la logica di bridge con il broker MQTT.
-- **mqtt** (Eclipse Mosquitto): broker MQTT minimal configurato per l'uso in locale.
 - **mongo** (MongoDB): storage persistente di utenti e log dei messaggi transitati.
+
+Il broker MQTT non è incluso nello stack Compose: il gateway si collega a un'istanza esistente, configurabile dal wizard iniziale.
 
 Tutti i servizi condividono la stessa rete interna Docker; solo il frontend espone porte verso l'esterno (`8080`).
 
