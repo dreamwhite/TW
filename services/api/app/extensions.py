@@ -1,5 +1,4 @@
 from flask_jwt_extended import JWTManager
-from flask_sock import Sock
 
 
 class Mongo:
@@ -25,4 +24,3 @@ class Mongo:
 
 mongo = Mongo()
 jwt = JWTManager()
-sock = Sock()

@@ -1,8 +1,7 @@
-import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks } from './shared.js';
+import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks, fetchWithAuth } from './shared.js';
 
 const state = {
   token: getToken(),
-  socket: null,
   user: null,
   setupRequired: false,
 };
@@ -14,7 +13,6 @@ const loginError = document.querySelector('#loginError');
 const publishForm = document.querySelector('#publishForm');
 const messageTableBody = document.querySelector('#messageTableBody');
 const refreshButton = document.querySelector('#refreshButton');
-const statusBadge = document.querySelector('#statusBadge');
 const userEmailLabel = document.querySelector('#userEmail');
 const logoutButton = document.querySelector('#logoutButton');
 const appAlerts = document.querySelector('#appAlerts');
@@ -43,25 +41,28 @@ loginForm.addEventListener('submit', async (event) => {
     }
 
     const data = await response.json();
-    handleLoginSuccess(data);
+    state.token = data.access_token;
+    setToken(data.access_token);
+    enterApp(data.email);
   } catch (error) {
     showAlert(loginError, error.message || 'Errore durante l\'autenticazione');
     console.error(error);
   }
 });
 
-publishForm.addEventListener('submit', (event) => {
+publishForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
-    flashApp('WebSocket non connesso, impossibile inviare il messaggio.', 'warning');
-    return;
-  }
 
   const topicInput = document.querySelector('#topic');
   const payloadInput = document.querySelector('#payload');
 
   const topic = topicInput.value.trim();
   const rawPayload = payloadInput.value.trim();
+
+  if (!topic) {
+    flashApp('Inserisci un topic valido.', 'warning');
+    return;
+  }
 
   let payload;
   try {
@@ -70,16 +71,25 @@ publishForm.addEventListener('submit', (event) => {
     payload = rawPayload;
   }
 
-  state.socket.send(
-    JSON.stringify({
-      action: 'publish',
-      topic: topic || undefined,
-      payload,
-    }),
-  );
+  try {
+    const response = await fetchWithAuth('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, payload }),
+      token: state.token,
+    });
 
-  payloadInput.value = '';
-  flashApp('Messaggio inviato al gateway', 'info');
+    if (!response.ok) {
+      const payloadResponse = await response.json().catch(() => ({}));
+      throw new Error(payloadResponse.error || 'Impossibile pubblicare il messaggio');
+    }
+
+    flashApp('Messaggio inviato al gateway', 'info');
+    payloadInput.value = '';
+  } catch (error) {
+    flashApp(error.message || 'Errore durante la pubblicazione', 'danger');
+    console.error(error);
+  }
 });
 
 refreshButton.addEventListener('click', async () => {
@@ -91,12 +101,52 @@ logoutButton.addEventListener('click', () => {
   logout();
 });
 
+async function bootstrap() {
+  const status = await initSetupStatus();
+  if (status.setupRequired) {
+    toggleAppView(false);
+    return;
+  }
+
+  if (state.token) {
+    await resumeSession();
+  }
+
+  if (!state.token) {
+    toggleAppView(false);
+  }
+}
+
+async function initSetupStatus() {
+  const status = await fetchSetupStatus();
+  state.setupRequired = status.setupRequired;
+  showSetupLinks(status.setupRequired);
+  if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {
+    window.location.href = '/setup.html';
+  }
+  return status;
+}
+
+async function resumeSession() {
+  try {
+    const response = await fetchWithAuth('/api/status/me', { token: state.token });
+    if (!response.ok) {
+      throw new Error('Sessione non valida');
+    }
+    const payload = await response.json();
+    const email = payload.email || payload.user || (payload.claims && payload.claims.sub) || 'utente';
+    enterApp(email, { silent: true });
+  } catch (error) {
+    clearToken();
+    state.token = null;
+    toggleAppView(false);
+  }
+}
+
 async function loadMessages() {
   if (!state.token) return;
   try {
-    const response = await fetch(`${API_BASE}/messages?limit=25`, {
-      headers: { Authorization: `Bearer ${state.token}` },
-    });
+    const response = await fetchWithAuth(`${API_BASE}/messages?limit=25`, { token: state.token });
     if (response.status === 401) {
       flashApp('Sessione scaduta, effettua nuovamente il login.', 'warning');
       logout();
@@ -113,62 +163,6 @@ async function loadMessages() {
   }
 }
 
-function connectWebSocket() {
-  if (!state.token) return;
-
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `${protocol}://${window.location.host}/ws?token=${state.token}`;
-
-  updateConnectionStatus('connecting', 'connessione…');
-
-  const socket = new WebSocket(wsUrl);
-  state.socket = socket;
-
-  socket.addEventListener('open', () => {
-    updateConnectionStatus('online', 'online');
-  });
-
-  socket.addEventListener('close', () => {
-    updateConnectionStatus('offline', 'offline');
-    setTimeout(connectWebSocket, 2000);
-  });
-
-  socket.addEventListener('error', (event) => {
-    console.error('WebSocket error', event);
-    updateConnectionStatus('offline', 'errore');
-    flashApp('Errore nella connessione WebSocket', 'danger');
-  });
-
-  socket.addEventListener('message', (event) => {
-    try {
-      const message = JSON.parse(event.data);
-      handleSocketMessage(message);
-    } catch (error) {
-      console.error('Errore parsing messaggio', error);
-    }
-  });
-}
-
-function handleSocketMessage(message) {
-  const { type, data } = message;
-  switch (type) {
-    case 'connected':
-      flashApp(`WebSocket connesso come ${data.user}`, 'success');
-      break;
-    case 'mqtt_message':
-      appendMessage(data);
-      break;
-    case 'publish_ack':
-      // ack informativa, nessuna azione aggiuntiva
-      break;
-    case 'error':
-      flashApp(data.message || 'Errore dal gateway', 'danger');
-      break;
-    default:
-      console.debug('Messaggio non gestito', message);
-  }
-}
-
 function renderMessages(items) {
   messageTableBody.innerHTML = '';
   if (!items.length) {
@@ -178,46 +172,40 @@ function renderMessages(items) {
     return;
   }
 
-  items
-    .slice()
-    .reverse()
-    .forEach((item) => appendMessage(item));
-}
-
-function appendMessage(item, prepend = true) {
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${item.direction || '-'}</td>
-    <td>${item.topic || '-'}</td>
-    <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
-    <td>${formatDate(item.received_at)}</td>
-  `;
-  if (prepend) {
-    messageTableBody.prepend(row);
-    while (messageTableBody.children.length > 50) {
-      messageTableBody.removeChild(messageTableBody.lastElementChild);
-    }
-  } else {
+  items.forEach((item) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.direction || '-'}</td>
+      <td>${item.topic || '-'}</td>
+      <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
+      <td>${formatDate(item.received_at)}</td>
+    `;
     messageTableBody.appendChild(row);
+  });
+}
+
+function logout() {
+  state.token = null;
+  state.user = null;
+  clearToken();
+
+  setUserEmail('');
+  refreshButton.disabled = true;
+  toggleAppView(false);
+  resetMessages();
+  loginForm.reset();
+  hideAlert(loginError);
+}
+
+function enterApp(email, { silent = false } = {}) {
+  state.user = email;
+  toggleAppView(true);
+  setUserEmail(email);
+  refreshButton.disabled = false;
+  if (!silent) {
+    flashApp(`Autenticato come ${email}`, 'success');
   }
-}
-
-function updateConnectionStatus(status, label) {
-  const classes = ['badge-offline', 'badge-online', 'badge-connecting', 'text-bg-secondary'];
-  statusBadge.textContent = label || status;
-  statusBadge.classList.remove(...classes);
-
-  const classMap = {
-    offline: 'badge-offline',
-    online: 'badge-online',
-    connecting: 'badge-connecting',
-  };
-
-  statusBadge.classList.add(classMap[status] || 'text-bg-secondary');
-}
-
-function setUserEmail(email) {
-  userEmailLabel.textContent = email;
+  loadMessages();
 }
 
 function toggleAppView(isLoggedIn) {
@@ -228,6 +216,14 @@ function toggleAppView(isLoggedIn) {
     loginView.classList.remove('d-none');
     appView.classList.add('d-none');
   }
+}
+
+function setUserEmail(email) {
+  userEmailLabel.textContent = email;
+}
+
+function resetMessages() {
+  messageTableBody.innerHTML = '<tr class="text-muted"><td colspan="4" class="text-center p-4">Effettua il login per visualizzare i messaggi.</td></tr>';
 }
 
 function flashApp(message, type = 'info') {
@@ -273,97 +269,4 @@ function escapeHtml(value) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-}
-
-function resetMessages() {
-  messageTableBody.innerHTML = '<tr class="text-muted"><td colspan="4" class="text-center p-4">Effettua il login per visualizzare i messaggi.</td></tr>';
-}
-
-function logout() {
-  if (state.socket) {
-    state.socket.close();
-  }
-  state.token = null;
-  state.socket = null;
-  state.user = null;
-  clearToken();
-
-  setUserEmail('');
-  updateConnectionStatus('offline', 'offline');
-  refreshButton.disabled = true;
-  toggleAppView(false);
-  resetMessages();
-  loginForm.reset();
-  hideAlert(loginError);
-}
-
-window.addEventListener('beforeunload', () => {
-  if (state.socket) {
-    state.socket.close();
-  }
-});
-
-function handleLoginSuccess(data) {
-  state.token = data.access_token;
-  setToken(data.access_token);
-  enterApp(data.email);
-}
-
-async function initSetupStatus() {
-  const status = await fetchSetupStatus();
-  state.setupRequired = status.setupRequired;
-  showSetupLinks(status.setupRequired);
-  if (state.setupRequired && !window.location.pathname.includes('/setup.html')) {
-    window.location.href = '/setup.html';
-  }
-  return status;
-}
-
-async function resumeSession() {
-  try {
-    const response = await fetch('/api/status/me', {
-      headers: { Authorization: `Bearer ${state.token}` },
-    });
-    if (!response.ok) {
-      throw new Error('Sessione non valida');
-    }
-    const payload = await response.json();
-    const email = payload.email || payload.user || (payload.claims && payload.claims.sub) || 'utente';
-    enterApp(email, { silent: true });
-  } catch (error) {
-    console.warn('Sessione non più valida, richiesto nuovo login');
-    clearToken();
-    state.token = null;
-    toggleAppView(false);
-  }
-}
-
-function enterApp(email, { silent = false } = {}) {
-  state.user = email;
-
-  toggleAppView(true);
-  setUserEmail(email);
-  refreshButton.disabled = false;
-  if (!silent) {
-    flashApp(`Autenticato come ${email}`, 'success');
-  }
-
-  loadMessages();
-  connectWebSocket();
-}
-
-async function bootstrap() {
-  const status = await initSetupStatus();
-  if (status.setupRequired) {
-    toggleAppView(false);
-    return;
-  }
-
-  if (state.token) {
-    await resumeSession();
-  }
-
-  if (!state.token) {
-    toggleAppView(false);
-  }
 }

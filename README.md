@@ -1,16 +1,16 @@
 # Tecnologie Web – Gateway MQTT
 
-Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un gateway che si occupa di trasformare messaggi HTTP/WebSocket in eventi MQTT e viceversa, offrendo anche una dashboard minimale per monitorare il traffico.
+Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un gateway che si occupa di trasformare richieste HTTP in eventi MQTT e viceversa, offrendo anche una dashboard minimale per monitorare il traffico.
 
 ## Stack
 
-- **Backend**: Flask (API REST + WebSocket raw), MongoDB, JWT, bridge MQTT
+- **Backend**: Flask (API REST), MongoDB, JWT, bridge MQTT
 - **Frontend**: HTML minimale basato su Bootstrap 5, JavaScript vanilla serviti da Nginx
 - **Infrastruttura**: Docker, Docker Compose, Nginx reverse proxy, broker Eclipse Mosquitto
 
 ## Struttura del progetto
 
-- `services/api`: codice del backend Flask modulare (auth, MQTT, WebSocket, servizi)
+- `services/api`: codice del backend Flask modulare (auth, MQTT, servizi)
 - `frontend`: asset statici e Dockerfile di Nginx per servire l'interfaccia
 - `docker-compose.yml`: orchestrazione completa (MongoDB, backend, frontend)
 
@@ -61,7 +61,7 @@ In ricezione vengono inviati messaggi JSON con `type` (`connected`, `mqtt_messag
 ## Note progettuali
 
 - Persistenza messaggi in MongoDB (`messages`) con timestamp, topic, direzione e payload (anche raw).
-- Bridge MQTT asincrono basato su `paho-mqtt` con broadcasting verso i client WebSocket.
+- Bridge MQTT asincrono basato su `paho-mqtt` con logging automatico dei messaggi in entrata/uscita.
 - Architettura modulare: separazione per auth, servizi, modelli, MQTT, websocket.
 - Documentazione aggiuntiva in `docs/` per dettaglio architetturale e flussi.
 

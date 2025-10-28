@@ -6,24 +6,6 @@ body {
     background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(25, 135, 84, 0.1));
 }
 
-#statusBadge {
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.badge-offline {
-    background-color: #dc3545 !important;
-}
-
-.badge-online {
-    background-color: #198754 !important;
-}
-
-.badge-connecting {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-}
-
 table td {
     vertical-align: middle;
 }

@@ -20,7 +20,6 @@ class MQTTBridge:
         self._connect_lock = Lock()
         self._message_service: MessageService | None = None
         self._config: dict[str, Any] | None = None
-        self._broadcaster = None
 
     def init_app(self, app, mongo) -> None:
         with self._connect_lock:
@@ -50,9 +49,6 @@ class MQTTBridge:
                 self._client.loop_start()
             except Exception as exc:  # pragma: no cover - connection errors surfaced at runtime
                 logger.exception("Could not connect to MQTT broker: %s", exc)
-
-    def attach_broadcaster(self, callback) -> None:
-        self._broadcaster = callback
 
     def publish(
         self,
@@ -112,11 +108,7 @@ class MQTTBridge:
                 "raw_payload": payload,
             }
 
-        if self._broadcaster:
-            try:
-                self._broadcaster("mqtt_message", stored)
-            except Exception:  # pragma: no cover
-                logger.exception("Unable to broadcast MQTT message")
+        logger.debug("MQTT message received: topic=%s", msg.topic)
 
 
 mqtt_bridge = MQTTBridge()
