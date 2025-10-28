@@ -30,7 +30,6 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
 3. Visita [http://localhost:8080/setup.html](http://localhost:8080/setup.html) per la configurazione guidata:
    - inserisci email/password dell'amministratore
    - imposta i parametri del broker MQTT (opzionali)
-   - decidi se avviare la modalità demo
    - salva e verrai reindirizzato alla dashboard
 
 La procedura salva l'utente admin nel database MongoDB e memorizza i parametri MQTT. Puoi rieseguirla in ogni momento tramite il link “Prima configurazione” nel menu laterale.
@@ -90,16 +89,6 @@ docker compose up --build frontend backend mongo
 ```
 
 Collega il backend al tuo broker MQTT (interno o esterno) dal wizard di setup per testare l'inoltro dei messaggi.
-
-### Modalità demo (solo frontend, nessun backend)
-
-Se ti serve soltanto mostrare l'interfaccia senza connettività verso l'API puoi avviare solo Nginx:
-
-```bash
-docker compose up --build frontend
-```
-
-Poi apri [http://localhost:8080?demo=1](http://localhost:8080?demo=1) e usa qualsiasi credenziale: il login abilita dati fittizi e una simulazione delle notifiche MQTT.
 
 ## Studente
 

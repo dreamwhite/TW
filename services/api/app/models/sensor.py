@@ -17,7 +17,6 @@ class Sensor:
     type: str | None
     description: str | None
     threshold: float | None
-    demo: bool
     created_at: datetime
     updated_at: datetime
 
@@ -32,7 +31,6 @@ class Sensor:
             type=document.get("type"),
             description=document.get("description"),
             threshold=document.get("threshold"),
-            demo=document.get("demo", False),
             created_at=document.get("created_at", datetime.now(timezone.utc)),
             updated_at=document.get("updated_at", datetime.now(timezone.utc)),
         )
@@ -47,7 +45,6 @@ class Sensor:
             "type": self.type,
             "description": self.description,
             "threshold": self.threshold,
-            "demo": self.demo,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -74,7 +71,6 @@ class SensorRepository:
             "type": payload.get("type"),
             "description": payload.get("description"),
             "threshold": payload.get("threshold"),
-            "demo": bool(payload.get("demo", False)),
             "created_at": now,
             "updated_at": now,
         }
@@ -91,7 +87,7 @@ class SensorRepository:
         update_doc: dict[str, Any] = {
             "updated_at": datetime.now(timezone.utc),
         }
-        for key in ("name", "topic", "unit", "icon", "type", "description", "threshold", "demo"):
+        for key in ("name", "topic", "unit", "icon", "type", "description", "threshold"):
             if key in payload:
                 update_doc[key] = payload[key]
 

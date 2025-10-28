@@ -29,8 +29,20 @@ export function showSetupLinks(show) {
   links.forEach((link) => link.classList.toggle('d-none', !show));
 }
 
-export function enableDemoMode() {
-  const url = new URL(window.location.href);
-  url.searchParams.set('demo', '1');
-  window.location.href = url.toString();
+export function requireToken() {
+  const token = getToken();
+  if (!token) {
+    window.location.href = '/index.html';
+    return null;
+  }
+  return token;
+}
+
+export async function fetchWithAuth(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  const token = options.token || getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  return fetch(url, { ...options, headers });
 }

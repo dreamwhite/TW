@@ -47,8 +47,8 @@
             <div class="container py-4">
                 <header class="mb-4 d-flex justify-content-between align-items-center">
                     <div>
-                        <h1 class="h3 mb-2">Sensori MQTT</h1>
-                        <p class="text-muted mb-0">Gestisci i sensori monitorati dal gateway: puoi simulare dati demo o configurare sensori reali.</p>
+                    <h1 class="h3 mb-2">Sensori MQTT</h1>
+                    <p class="text-muted mb-0">Gestisci i sensori monitorati dal gateway: puoi aggiungere, modificare o rimuovere configurazioni MQTT.</p>
                     </div>
                     <button class="btn btn-primary" id="newSensorButton">
                         <i class="fa-solid fa-plus"></i> Aggiungi sensore
@@ -87,12 +87,6 @@
                                 </select>
                             </div>
                             <div class="col-12 col-lg-3">
-                                <div class="form-check form-switch mt-4 pt-2">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="sensorDemoData">
-                                    <label class="form-check-label" for="sensorDemoData">Visualizza con dati demo</label>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-3">
                                 <label for="sensorDescription" class="form-label">Descrizione</label>
                                 <input type="text" class="form-control" id="sensorDescription" placeholder="Sonda in sala riunioni" />
                             </div>
@@ -100,9 +94,12 @@
                                 <label for="sensorThreshold" class="form-label">Soglia avviso</label>
                                 <input type="number" step="any" class="form-control" id="sensorThreshold" placeholder="es. 28" />
                             </div>
-                            <div class="col-12 col-lg-3 d-flex align-items-end">
-                                <button type="submit" class="btn btn-success w-100">
+                            <div class="col-12 col-lg-3 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success w-100" id="sensorSaveButton">
                                     <i class="fa-solid fa-floppy-disk"></i> Salva sensore
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary w-100 d-none" id="sensorCancelEdit">
+                                    <i class="fa-solid fa-rotate-left"></i> Annulla
                                 </button>
                             </div>
                         </form>
@@ -113,14 +110,9 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h5 mb-0">Sensori registrati</h2>
-                            <div class="btn-group">
-                                <button class="btn btn-outline-secondary btn-sm" id="sensorsRefresh">
-                                    <i class="fa-solid fa-rotate"></i> Aggiorna
-                                </button>
-                                <button class="btn btn-outline-success btn-sm" id="sensorsDemoToggle">
-                                    <i class="fa-solid fa-vial"></i> Attiva demo
-                                </button>
-                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" id="sensorsRefresh">
+                                <i class="fa-solid fa-rotate"></i> Aggiorna
+                            </button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-striped align-middle mb-0">

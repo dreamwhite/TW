@@ -2,7 +2,6 @@ import { ensureConfigured, showSetupLinks } from './shared.js';
 
 const form = document.querySelector('#setupForm');
 const alertBox = document.querySelector('#setupAlert');
-const demoSwitch = document.querySelector('#demoSwitch');
 
 init();
 
@@ -25,7 +24,6 @@ form.addEventListener('submit', async (event) => {
     mqtt_port: document.querySelector('#mqttPort').value || undefined,
     mqtt_username: document.querySelector('#mqttUsername').value.trim() || undefined,
     mqtt_password: document.querySelector('#mqttPassword').value || undefined,
-    demo: demoSwitch.checked,
   };
 
   try {
@@ -44,8 +42,7 @@ form.addEventListener('submit', async (event) => {
     if (data.configured) {
       showAlert('Configurazione completata! Verrai reindirizzato...', 'success');
       setTimeout(() => {
-        const redirect = demoSwitch.checked ? '/index.html?demo=1' : '/index.html';
-        window.location.href = redirect;
+        window.location.href = '/index.html';
       }, 1200);
     }
   } catch (error) {

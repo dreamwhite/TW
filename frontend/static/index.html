@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-body-tertiary">
-    <div id="loginView" class="min-vh-100 d-flex align-items-center d-none">
+    <div id="loginView" class="min-vh-100 d-flex align-items-center">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-5">
@@ -18,9 +18,6 @@
                             <p class="text-secondary text-center mb-4">
                                 Accedi con le tue credenziali per utilizzare il bridge WebSocket ⇄ MQTT.
                             </p>
-                            <div class="alert alert-info d-none" id="demoNotice" role="alert">
-                                Modalità demo attiva: nessuna chiamata verso il backend, dati fittizi.
-                            </div>
                             <form id="loginForm" class="row g-3">
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email</label>
@@ -39,9 +36,6 @@
                             <div class="alert alert-danger d-none mt-3" id="loginError" role="alert"></div>
                         </div>
                     </div>
-                    <p class="text-center text-muted small mt-3">
-                        Utente demo: <code>admin@example.com</code> / <code>admin123</code>
-                    </p>
                 </div>
             </div>
         </div>
@@ -52,10 +46,6 @@
             <div class="container-fluid">
                 <span class="navbar-brand">Tecnologie Web · Gateway</span>
                 <div class="d-flex align-items-center gap-2 ms-auto">
-                    <button class="btn btn-outline-light btn-sm" id="demoToggleButton" type="button">
-                        <i class="fa-solid fa-vial me-1"></i>
-                        <span>Attiva demo</span>
-                    </button>
                     <span id="statusBadge" class="badge text-bg-secondary">offline</span>
                     <span class="text-white-50 small" id="userEmail"></span>
                     <button class="btn btn-outline-light btn-sm" id="logoutButton">

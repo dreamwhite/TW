@@ -1,29 +1,9 @@
-import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks, enableDemoMode } from './shared.js';
-
-const urlParams = new URLSearchParams(window.location.search);
-const demoMode = urlParams.get('demo') === '1';
-
-const DEMO_MESSAGES = [
-  {
-    direction: 'inbound',
-    topic: 'gateway/in/status',
-    payload: { door: 'closed', battery: 87 },
-    received_at: new Date(Date.now() - 120000).toISOString(),
-  },
-  {
-    direction: 'outbound',
-    topic: 'gateway/out/command',
-    payload: { action: 'ping' },
-    received_at: new Date(Date.now() - 60000).toISOString(),
-  },
-];
+import { ensureConfigured as fetchSetupStatus, getToken, setToken, clearToken, showSetupLinks } from './shared.js';
 
 const state = {
-  token: demoMode ? DEMO_TOKEN : getToken(),
+  token: getToken(),
   socket: null,
   user: null,
-  demoMode,
-  demoTimer: null,
   setupRequired: false,
 };
 
@@ -31,7 +11,6 @@ const loginView = document.querySelector('#loginView');
 const appView = document.querySelector('#appView');
 const loginForm = document.querySelector('#loginForm');
 const loginError = document.querySelector('#loginError');
-const demoNotice = document.querySelector('#demoNotice');
 const publishForm = document.querySelector('#publishForm');
 const messageTableBody = document.querySelector('#messageTableBody');
 const refreshButton = document.querySelector('#refreshButton');
@@ -39,21 +18,10 @@ const statusBadge = document.querySelector('#statusBadge');
 const userEmailLabel = document.querySelector('#userEmail');
 const logoutButton = document.querySelector('#logoutButton');
 const appAlerts = document.querySelector('#appAlerts');
-const demoToggleButton = document.querySelector('#demoToggleButton');
 
 const API_BASE = '/api';
 
-if (demoMode && demoNotice) {
-  demoNotice.classList.remove('d-none');
-}
-
 bootstrap();
-
-if (demoToggleButton) {
-  demoToggleButton.addEventListener('click', () => {
-    enableDemoMode();
-  });
-}
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -61,11 +29,6 @@ loginForm.addEventListener('submit', async (event) => {
 
   const email = document.querySelector('#email').value.trim();
   const password = document.querySelector('#password').value;
-
-  if (state.demoMode) {
-    handleLoginSuccess({ access_token: 'demo-token', email });
-    return;
-  }
 
   try {
     const response = await fetch(`${API_BASE}/auth/login`, {
@@ -89,28 +52,6 @@ loginForm.addEventListener('submit', async (event) => {
 
 publishForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  if (state.demoMode) {
-    const topicInput = document.querySelector('#topic');
-    const payloadInput = document.querySelector('#payload');
-    const topic = topicInput.value.trim() || 'gateway/demo/manual';
-    const rawPayload = payloadInput.value.trim();
-    let payload;
-    try {
-      payload = JSON.parse(rawPayload);
-    } catch (error) {
-      payload = rawPayload || '<vuoto>';
-    }
-    appendMessage({
-      direction: 'outbound',
-      topic,
-      payload,
-      received_at: new Date().toISOString(),
-    });
-    flashApp('Messaggio demo registrato (nessun invio reale).', 'info');
-    payloadInput.value = '';
-    return;
-  }
-
   if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
     flashApp('WebSocket non connesso, impossibile inviare il messaggio.', 'warning');
     return;
@@ -151,11 +92,6 @@ logoutButton.addEventListener('click', () => {
 });
 
 async function loadMessages() {
-  if (state.demoMode) {
-    renderMessages([...DEMO_MESSAGES]);
-    return;
-  }
-
   if (!state.token) return;
   try {
     const response = await fetch(`${API_BASE}/messages?limit=25`, {
@@ -178,23 +114,6 @@ async function loadMessages() {
 }
 
 function connectWebSocket() {
-  if (state.demoMode) {
-    updateConnectionStatus('online', 'demo');
-    if (state.demoTimer) {
-      clearInterval(state.demoTimer);
-    }
-    state.demoTimer = setInterval(() => {
-      const payload = {
-        direction: Math.random() > 0.5 ? 'inbound' : 'outbound',
-        topic: `gateway/demo/${Math.random() > 0.5 ? 'status' : 'command'}`,
-        payload: { value: Math.floor(Math.random() * 100) },
-        received_at: new Date().toISOString(),
-      };
-      appendMessage(payload);
-    }, 5000);
-    return;
-  }
-
   if (!state.token) return;
 
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -364,16 +283,10 @@ function logout() {
   if (state.socket) {
     state.socket.close();
   }
-  if (state.demoTimer) {
-    clearInterval(state.demoTimer);
-    state.demoTimer = null;
-  }
   state.token = null;
   state.socket = null;
   state.user = null;
-  if (!state.demoMode) {
-    clearToken();
-  }
+  clearToken();
 
   setUserEmail('');
   updateConnectionStatus('offline', 'offline');
@@ -388,16 +301,11 @@ window.addEventListener('beforeunload', () => {
   if (state.socket) {
     state.socket.close();
   }
-  if (state.demoTimer) {
-    clearInterval(state.demoTimer);
-  }
 });
 
 function handleLoginSuccess(data) {
   state.token = data.access_token;
-  if (!state.demoMode) {
-    setToken(data.access_token);
-  }
+  setToken(data.access_token);
   enterApp(data.email);
 }
 
@@ -437,7 +345,7 @@ function enterApp(email, { silent = false } = {}) {
   setUserEmail(email);
   refreshButton.disabled = false;
   if (!silent) {
-    flashApp(state.demoMode ? `Demo attiva per ${email}` : `Autenticato come ${email}`, 'success');
+    flashApp(`Autenticato come ${email}`, 'success');
   }
 
   loadMessages();
@@ -445,12 +353,6 @@ function enterApp(email, { silent = false } = {}) {
 }
 
 async function bootstrap() {
-  if (state.demoMode) {
-    showSetupLinks(false);
-    toggleAppView(false);
-    return;
-  }
-
   const status = await initSetupStatus();
   if (status.setupRequired) {
     toggleAppView(false);
