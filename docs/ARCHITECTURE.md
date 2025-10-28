@@ -29,6 +29,7 @@ services/api/app
 - **MQTTBridge** mantiene la connessione verso Mosquitto, iscrive ai topic in ascolto e notifica l'hub WebSocket su messaggi in ingresso.
 - **WebSocketHub** gestisce le connessioni WebSocket attive (JWT richiesto via query string) e instrada i messaggi pubblicati verso MQTT.
 - **SettingsRepository/SetupService** memorizzano lo stato di configurazione iniziale in MongoDB e permettono di impostare utente admin e parametri MQTT al primo avvio.
+- **SensorRepository/Sensors API** forniscono CRUD sui sensori configurati (nome, topic, unità, soglie) così da popolare la dashboard e gestire errori manuali di configurazione.
 
 ## Flussi principali
 
@@ -61,3 +62,4 @@ services/api/app
 - Persistenza e dashboard più avanzate (filtri per topic, statistiche).
 - Integrazione con certificati TLS per Nginx / MQTT in ambienti non locali.
 - Migliorare il wizard di setup con validazione avanzata e test connessione MQTT.
+- Persistenza di layout avanzati e raggruppamenti di sensori con viewer real-time.

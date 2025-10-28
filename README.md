@@ -42,6 +42,10 @@ La procedura salva l'utente admin nel database MongoDB e memorizza i parametri M
 - `GET /api/status/me` — dati utente attuale (JWT necessario).
 - `GET /api/messages?limit=25` — ultimi messaggi MQTT registrati.
 - `POST /api/messages` — pubblica un messaggio su MQTT (richiede body `{ topic?, payload }`).
+- `GET /api/sensors` — elenco sensori configurati.
+- `POST /api/sensors` — crea un nuovo sensore (nome, topic, unità, icona, soglia, ecc.).
+- `PUT /api/sensors/:id` — aggiorna un sensore esistente.
+- `DELETE /api/sensors/:id` — rimuove un sensore.
 
 Il websocket è esposto su `/ws` e accetta la connessione con querystring `?token=<JWT>`. Il payload atteso è JSON del tipo:
 
