@@ -9,6 +9,7 @@ from .mqtt.client import mqtt_bridge
 from .routes.status import status_bp
 from .routes.messages import messages_bp
 from .routes.setup import setup_bp
+from .routes.sensors import sensors_bp
 from .websocket import hub, register_websocket_routes
 
 
@@ -29,6 +30,7 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(status_bp, url_prefix="/api/status")
     app.register_blueprint(messages_bp, url_prefix="/api/messages")
+    app.register_blueprint(sensors_bp, url_prefix="/api/sensors")
     app.register_blueprint(setup_bp, url_prefix="/api/setup")
 
     register_websocket_routes(sock)
