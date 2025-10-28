@@ -19,7 +19,7 @@ const DEMO_MESSAGES = [
 ];
 
 const state = {
-  token: demoMode ? null : getToken(),
+  token: demoMode ? DEMO_TOKEN : getToken(),
   socket: null,
   user: null,
   demoMode,

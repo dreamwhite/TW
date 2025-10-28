@@ -2,13 +2,15 @@ import { ensureConfigured, getToken, showSetupLinks } from './shared.js';
 
 const state = {
   token: null,
-  demoMode: new URLSearchParams(window.location.search).get('demo') === '1',
+  demoParam: new URLSearchParams(window.location.search).get('demo') === '1',
+  useDemo: false,
   items: [],
 };
 
 const tableBody = document.querySelector('#messagesTableBody');
 const refreshButton = document.querySelector('#messagesRefresh');
 const downloadButton = document.querySelector('#messagesDownload');
+const demoToggleButton = document.querySelector('#messagesDemoToggle');
 const alertBox = document.querySelector('#messagesAlert');
 const filterDirection = document.querySelector('#filterDirection');
 const filterTopic = document.querySelector('#filterTopic');
@@ -24,7 +26,10 @@ async function init() {
     }
 
     state.token = getToken();
-    if (!state.token) {
+    state.useDemo = state.demoParam;
+    updateDemoToggle();
+
+    if (!state.useDemo && !state.token) {
         window.location.href = '/index.html';
         return;
     }
@@ -57,8 +62,19 @@ downloadButton.addEventListener('click', () => {
     URL.revokeObjectURL(url);
 });
 
+demoToggleButton.addEventListener('click', async () => {
+    state.useDemo = !state.useDemo;
+    updateDemoToggle();
+    if (!state.useDemo && !state.token) {
+        window.location.href = '/index.html';
+        return;
+    }
+    await loadMessages();
+    flash(state.useDemo ? 'Demo attiva: dati fittizi in visualizzazione' : 'Tornato ai dati reali', state.useDemo ? 'success' : 'info');
+});
+
 async function loadMessages() {
-    if (state.demoMode) {
+    if (state.useDemo) {
         state.items = generateDemoMessages();
         renderTable();
         return;
@@ -124,7 +140,11 @@ function generateDemoMessages() {
     return Array.from({ length: Number(filterLimit.value || 25) }, (_, index) => ({
         direction: index % 2 === 0 ? 'inbound' : 'outbound',
         topic: index % 2 === 0 ? 'gateway/demo/status' : 'gateway/demo/command',
-        payload: { demo: true, index },
+        payload: {
+            demo: true,
+            index,
+            note: index % 2 === 0 ? 'lettura sensore' : 'comando inviato',
+        },
         received_at: new Date(now - index * 4500).toISOString(),
     }));
 }
@@ -161,4 +181,17 @@ function flash(message, type) {
     flash.timeoutId = setTimeout(() => {
         alertBox.classList.add('d-none');
     }, 3000);
+}
+
+function updateDemoToggle() {
+    if (!demoToggleButton) return;
+    if (state.useDemo) {
+        demoToggleButton.classList.remove('btn-outline-success');
+        demoToggleButton.classList.add('btn-success');
+        demoToggleButton.innerHTML = '<i class="fa-solid fa-toggle-off"></i> Esci dalla demo';
+    } else {
+        demoToggleButton.classList.remove('btn-success');
+        demoToggleButton.classList.add('btn-outline-success');
+        demoToggleButton.innerHTML = '<i class="fa-solid fa-vial"></i> Attiva dati demo';
+    }
 }
