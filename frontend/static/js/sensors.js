@@ -10,13 +10,14 @@ const form = document.querySelector('#sensorForm');
 const alertBox = document.querySelector('#sensorsAlert');
 const tableBody = document.querySelector('#sensorsTableBody');
 const refreshButton = document.querySelector('#sensorsRefresh');
-const newSensorButton = document.querySelector('#newSensorButton');
-const cancelEditButton = document.querySelector('#sensorCancelEdit');
 const saveButton = document.querySelector('#sensorSaveButton');
 const searchInput = document.querySelector('#sensorSearch');
 const typeFilter = document.querySelector('#sensorTypeFilter');
 const formStatus = document.querySelector('#sensorFormStatus');
 const formTitle = document.querySelector('#sensorFormTitle');
+const deleteButton = document.querySelector('#sensorDeleteButton');
+const editModalEl = document.querySelector('#sensorEditModal');
+const editModal = editModalEl ? new bootstrap.Modal(editModalEl) : null;
 
 init();
 
@@ -33,19 +34,15 @@ async function init() {
   }
   state.token = token;
 
-  form.addEventListener('submit', handleSubmit);
+  form.addEventListener('submit', (event) => event.preventDefault());
+  saveButton.addEventListener('click', handleSubmit);
   refreshButton.addEventListener('click', loadSensors);
-  newSensorButton.addEventListener('click', () => {
-    resetForm();
-    form.scrollIntoView({ behavior: 'smooth' });
-    form.sensorName.focus();
-  });
-  cancelEditButton.addEventListener('click', () => {
-    resetForm();
-    flash('Edit canceled.', 'info');
-  });
   searchInput.addEventListener('input', renderTable);
   typeFilter.addEventListener('change', renderTable);
+  deleteButton.addEventListener('click', () => {
+    if (!state.editingId) return;
+    removeSensor(state.editingId);
+  });
 
   await loadSensors();
 }
@@ -98,6 +95,9 @@ async function handleSubmit(event) {
 
     flash(state.editingId ? 'Sensor updated successfully.' : 'Sensor created successfully.', 'success');
     resetForm();
+    if (editModal) {
+      editModal.hide();
+    }
     await loadSensors();
   } catch (error) {
     flash(error.message || 'Error while saving the sensor', 'danger');
@@ -198,8 +198,9 @@ function startEdit(id) {
   form.sensorDescription.value = sensor.description || '';
   form.sensorThreshold.value = sensor.threshold ?? '';
   saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update sensor';
-  cancelEditButton.classList.remove('d-none');
-  form.scrollIntoView({ behavior: 'smooth' });
+  if (editModal) {
+    editModal.show();
+  }
 }
 
 async function removeSensor(id) {
@@ -220,6 +221,9 @@ async function removeSensor(id) {
     if (state.editingId === id) {
       resetForm();
     }
+    if (editModal) {
+      editModal.hide();
+    }
     await loadSensors();
   } catch (error) {
     flash(error.message || 'Error while deleting the sensor', 'danger');
@@ -231,7 +235,6 @@ function resetForm() {
   state.editingId = null;
   form.reset();
   saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save sensor';
-  cancelEditButton.classList.add('d-none');
   formStatus.classList.add('d-none');
   formTitle.textContent = 'Add a new sensor';
 }

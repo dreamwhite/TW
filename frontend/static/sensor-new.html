@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Add Sensor · Gateway MQTT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-7V8WohE2Abb+4wCjNG98Rr6xciMghvYDnCetJ2Pp8lQDxz8awWEfduLdM6+qO5pz50jdK4Zk2gq1hF8+BM3G7w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/index.html">Gateway MQTT</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSensors" aria-controls="navbarSensors" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSensors">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.html"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/sensor-new.html"><i class="fa-solid fa-plus"></i> New sensor</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sensors.html"><i class="fa-solid fa-gauge"></i> Sensors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text"></i> Logs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-shell d-flex flex-column flex-lg-row">
+        <aside class="sidebar border-end bg-white">
+            <div class="sidebar-body p-3">
+                <div class="sidebar-heading text-uppercase text-muted small mb-3">Navigation</div>
+                <nav class="nav flex-row flex-lg-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
+                    <a class="nav-link active" href="/sensor-new.html"><i class="fa-solid fa-plus me-2"></i><span>New sensor</span></a>
+                    <a class="nav-link" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>Manage sensors</span></a>
+                    <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Logs</span></a>
+                    <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Setup</span></a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="app-content flex-grow-1">
+            <div class="container py-4">
+                <header class="mb-4">
+                    <p class="text-uppercase text-muted small mb-1">Gateway MQTT</p>
+                    <h1 class="h3 mb-2">Add a new sensor</h1>
+                    <p class="text-muted mb-0">Fill in the MQTT topic and optional metadata. After saving you'll be redirected to the sensors list.</p>
+                </header>
+
+                <div id="newSensorAlert" class="alert d-none" role="alert"></div>
+
+                <section class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form id="newSensorForm" class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="sensorName" class="form-label">Sensor name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="sensorName" placeholder="Room temperature" required />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="sensorTopic" class="form-label">MQTT topic <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="sensorTopic" placeholder="gateway/sensors/temp" required />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="sensorType" class="form-label">Type</label>
+                                <select class="form-select" id="sensorType">
+                                    <option value="generic">Generic</option>
+                                    <option value="temperature">Temperature</option>
+                                    <option value="humidity">Humidity</option>
+                                    <option value="presence">Presence</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="sensorUnit" class="form-label">Unit (optional)</label>
+                                <input type="text" class="form-control" id="sensorUnit" placeholder="°C" />
+                            </div>
+                            <div class="col-12">
+                                <label for="sensorDescription" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="sensorDescription" placeholder="Probe in meeting room" />
+                            </div>
+                            <div class="col-12">
+                                <label for="sensorIcon" class="form-label">Icon (Font Awesome)</label>
+                                <input type="text" class="form-control" id="sensorIcon" placeholder="fa-solid fa-temperature-half" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="sensorThreshold" class="form-label">Threshold (optional)</label>
+                                <input type="number" step="any" class="form-control" id="sensorThreshold" placeholder="e.g. 28" />
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save sensor
+                                </button>
+                                <a href="/sensors.html" class="btn btn-outline-secondary">Back to list</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/sensor-new.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
