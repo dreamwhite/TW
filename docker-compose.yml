@@ -8,23 +8,43 @@ services:
       - ./data/mongo:/data/db
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build:
       context: ./services/api
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     env_file:
       - .env
     restart: unless-stopped
     ports:
       - "5001:5000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:5000/api/status/', (res) => { if (res.statusCode === 200) process.exit(0); process.exit(1); }).on('error', () => process.exit(1));",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   frontend:
     build:
       context: ./frontend
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "8080:80"
     restart: unless-stopped
