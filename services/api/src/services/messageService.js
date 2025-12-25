@@ -1,5 +1,6 @@
 import { collection } from '../db.js';
 
+// Tenta di trasformare la stringa in JSON, altrimenti lascia raw
 function parsePayload(payload) {
   if (typeof payload !== 'string') {
     return payload;
@@ -11,6 +12,7 @@ function parsePayload(payload) {
   }
 }
 
+// Normalizzazione per la risposta API
 function normalize(doc) {
   const normalized = {
     direction: doc.direction,
@@ -25,6 +27,7 @@ function normalize(doc) {
   return normalized;
 }
 
+// Salva un messaggio (inbound/outbound) nel log Mongo
 async function logMessage({ direction, topic, payload, meta }) {
   const normalizedPayload = parsePayload(payload);
   const rawPayload =

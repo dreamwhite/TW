@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate, createUser, issueToken } from '../services/userService.js';
 import { requireAdmin, requireAuth } from '../middleware/auth.js';
 
+// Endpoint di autenticazione (login + register)
 const router = express.Router();
 
 router.post('/login', async (req, res) => {

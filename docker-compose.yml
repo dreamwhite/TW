@@ -5,7 +5,7 @@ services:
     environment:
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-gateway}
     volumes:
-      - mongo_data:/data/db
+      - ./data/mongo:/data/db
     ports:
       - "27017:27017"
 
@@ -18,7 +18,7 @@ services:
       - .env
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5001:5000"
 
   frontend:
     build:
@@ -29,5 +29,15 @@ services:
       - "8080:80"
     restart: unless-stopped
 
-volumes:
-  mongo_data:
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    restart: unless-stopped

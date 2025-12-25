@@ -4,6 +4,7 @@ import { startBridge } from '../mqttBridge.js';
 import { hasUsers, createUser, findByEmail } from '../services/userService.js';
 import { fetchSettings, upsertSettings } from '../services/settingsService.js';
 
+// Wizard di setup iniziale (admin + parametri MQTT)
 const router = express.Router();
 
 router.get('/status', async (_req, res) => {

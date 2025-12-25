@@ -1,5 +1,6 @@
 import { collection, ObjectId } from '../db.js';
 
+// Trasforma il documento Mongo in DTO per la dashboard
 function normalize(doc) {
   if (!doc) return null;
   return {

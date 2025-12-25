@@ -2,6 +2,7 @@ import { collection } from '../db.js';
 
 const SETTINGS_ID = 'global';
 
+// Recupera il documento unico di setup; se manca assume non configurato
 async function fetchSettings() {
   const doc = await collection('settings').findOne({ _id: SETTINGS_ID });
   if (!doc) {
@@ -16,6 +17,7 @@ async function fetchSettings() {
   };
 }
 
+// Crea/aggiorna il documento di setup (MQTT + flag configured)
 async function upsertSettings(payload) {
   const toStore = {
     configured: payload.configured ?? false,
@@ -38,6 +40,7 @@ async function upsertSettings(payload) {
   return fetchSettings();
 }
 
+// Garantisce che il documento esista prima di controllare configured
 async function ensureSetupDocument() {
   const doc = await collection('settings').findOne({ _id: SETTINGS_ID });
   if (!doc) {

@@ -4,6 +4,7 @@ import { latest } from '../services/messageService.js';
 import { publish } from '../mqttBridge.js';
 import { config } from '../config.js';
 
+// Lista/publish messaggi MQTT tramite REST
 const router = express.Router();
 
 router.get('/', requireAuth, async (req, res) => {

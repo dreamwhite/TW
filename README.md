@@ -12,14 +12,16 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
 
 - `services/api`: backend Express (auth, MQTT bridge, servizi REST)
 - `frontend`: asset statici e Dockerfile di Nginx per servire l'interfaccia
+- `data/mongo`: bind mount con i dati Mongo locali (ignorato da git)
 - `docker-compose.yml`: orchestrazione completa (MongoDB, backend, frontend)
+- `package.json` (root): script pnpm per avvio stack e pulizia dati
 
 > Nota: il gateway si aspetta un broker MQTT già disponibile in rete. Configura host/porta dal wizard iniziale oppure tramite variabili d'ambiente.
 - `.env.example`: variabili d'ambiente richieste dal backend
 
 ## Avvio rapido
 
-1. Copia il file `.env.example` in `.env` e personalizza valori sensibili (`SECRET_KEY`, `JWT_SECRET_KEY`, ecc.).
+1. Copia il file `.env.example` in `.env` e personalizza i valori sensibili (`JWT_SECRET_KEY`, ecc.).
 2. Avvia lo stack con Docker Compose:
 
    ```bash
@@ -34,6 +36,17 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
    pnpm install
    pnpm run local
    ```
+
+   Oppure avvia tutto lo stack (frontend + backend + Mongo + mongo-express) con pnpm dalla root:
+
+   ```bash
+   pnpm run stack
+   ```
+
+   Script utili da root:
+
+   - `pnpm run stack:dev` — solo servizi principali (frontend, backend, mongo) con rebuild.
+   - `pnpm run clean` — svuota `data/mongo` per ricominciare da zero.
 
 3. Visita [http://localhost:8080/setup.html](http://localhost:8080/setup.html) per la configurazione guidata:
    - inserisci email/password dell'amministratore
@@ -71,10 +84,17 @@ La procedura salva l'utente admin nel database MongoDB e memorizza i parametri M
 Per provare la parte web (login + dashboard) è sufficiente avviare backend, frontend e MongoDB:
 
 ```bash
-docker compose up --build frontend backend mongo
+docker compose up --build frontend backend mongo mongo-express
 ```
 
 Collega il backend al tuo broker MQTT (interno o esterno) dal wizard di setup per testare l'inoltro dei messaggi.
+
+### Porte e servizi (default)
+
+- Frontend + proxy: `http://localhost:8080`
+- Backend diretto: `http://localhost:5001` (mappato su 5000 nel container)
+- MongoDB: `mongodb://localhost:27017` (dati persistenti in `data/mongo`)
+- Mongo Express: `http://localhost:8081` (basic auth admin/admin)
 
 ## Studente
 

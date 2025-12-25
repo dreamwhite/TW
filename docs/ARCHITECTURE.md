@@ -2,15 +2,20 @@
 
 ## Panoramica
 
-- Lo stack è composto da tre container principali orchestrati tramite Docker Compose:
+- Lo stack è composto da quattro container principali orchestrati tramite Docker Compose:
 
 - **frontend** (Nginx): serve l'interfaccia statica e funge da reverse proxy per le API REST (`/api`).
 - **backend** (Express): espone API JSON con autenticazione JWT e incapsula la logica di bridge con il broker MQTT.
-- **mongo** (MongoDB): storage persistente di utenti e log dei messaggi transitati.
+- **mongo** (MongoDB): storage persistente di utenti e log dei messaggi transitati (bind mount `./data/mongo`).
+- **mongo-express**: pannello web per esplorare il database (porta 8081, basic auth admin/admin).
 
 Il broker MQTT non è incluso nello stack Compose: il gateway si collega a un'istanza esistente, configurabile dal wizard iniziale.
 
-Tutti i servizi condividono la stessa rete interna Docker; solo il frontend espone porte verso l'esterno (`8080`).
+Porte di default:
+- Frontend/proxy: 8080
+- Backend diretto: 5001 (mappa la 5000 interna)
+- Mongo: 27017 (persistenza su `data/mongo`)
+- Mongo Express: 8081
 
 ## Moduli backend
 

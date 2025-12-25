@@ -5,6 +5,7 @@ import { logMessage } from './services/messageService.js';
 let client;
 let currentConfig = { ...config.mqtt };
 
+// Avvia (o riavvia) il bridge MQTT usando config di base + override dal setup
 function startBridge(overrideConfig = {}) {
   currentConfig = { ...currentConfig, ...overrideConfig };
 
@@ -33,6 +34,7 @@ function startBridge(overrideConfig = {}) {
     });
   });
 
+  // Logga ogni messaggio in ingresso per la dashboard
   client.on('message', async (topic, payloadBuffer) => {
     const payload = payloadBuffer.toString();
     try {
@@ -56,6 +58,7 @@ function startBridge(overrideConfig = {}) {
   });
 }
 
+// Pubblica su MQTT e registra l'evento in Mongo
 async function publish(topic, payload, meta = {}) {
   const qos = currentConfig.qos ?? 1;
   let payloadToSend = payload;

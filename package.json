@@ -1,0 +1,9 @@
+{
+  "name": "tw-stack",
+  "private": true,
+  "scripts": {
+    "stack": "docker compose up --build",
+    "stack:dev": "docker compose up --build frontend backend mongo",
+    "clean": "bash -c \"rm -rf data/mongo && mkdir -p data/mongo\""
+  }
+}

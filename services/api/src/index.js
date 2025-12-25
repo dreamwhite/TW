@@ -13,6 +13,7 @@ import statusRoutes from './routes/status.js';
 import { ensureDefaultAdmin } from './services/userService.js';
 import { ensureSetupDocument, fetchSettings } from './services/settingsService.js';
 
+// Bootstrap sequenziale: DB -> setup -> MQTT -> server HTTP
 async function bootstrap() {
   await connectMongo(config.mongoUri, config.mongoDbName);
   await ensureSetupDocument();
@@ -41,12 +42,14 @@ async function bootstrap() {
   app.use(express.json({ limit: '1mb' }));
   app.use(morgan('dev'));
 
+  // Routing REST
   app.use('/api/auth', authRoutes);
   app.use('/api/status', statusRoutes);
   app.use('/api/messages', messagesRoutes);
   app.use('/api/sensors', sensorsRoutes);
   app.use('/api/setup', setupRoutes);
 
+  // Fallback error handler minimale
   app.use((err, _req, res, _next) => {
     console.error('Unexpected error:', err);
     res.status(500).json({ error: 'Internal server error' });

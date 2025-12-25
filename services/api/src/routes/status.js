@@ -1,6 +1,7 @@
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
 
+// Healthcheck e info utente corrente
 const router = express.Router();
 
 router.get('/', (_req, res) => {

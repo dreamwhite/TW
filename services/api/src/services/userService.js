@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { collection } from '../db.js';
 import { config } from '../config.js';
 
+// Normalizza il documento Mongo in un oggetto user leggero
 function normalizeUser(doc) {
   if (!doc) return null;
   return {
@@ -17,7 +18,8 @@ async function findByEmail(email) {
 }
 
 async function hasUsers() {
-  return collection('users').countDocuments() > 0;
+  const count = await collection('users').countDocuments();
+  return count > 0;
 }
 
 async function createUser({ email, password, roles = ['user'] }) {
@@ -40,6 +42,7 @@ async function authenticate(email, password) {
   return normalizeUser(user);
 }
 
+// Genera un JWT con email e ruoli
 function issueToken(user) {
   return jwt.sign(
     { sub: user.email, roles: user.roles || [] },
@@ -48,6 +51,7 @@ function issueToken(user) {
   );
 }
 
+// Se non esistono utenti, crea l'admin di default da env
 async function ensureDefaultAdmin() {
   if (await hasUsers()) {
     return { created: false };

@@ -2,6 +2,7 @@ import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { createSensor, deleteSensor, listSensors, updateSensor } from '../services/sensorService.js';
 
+// CRUD sensori configurati
 const router = express.Router();
 
 function validatePayload(payload, creating) {

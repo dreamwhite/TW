@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 
+// Estrae il token Bearer dall'header Authorization
 function extractToken(req) {
   const authHeader = req.headers.authorization || '';
   if (!authHeader.toLowerCase().startsWith('bearer ')) {
@@ -9,6 +10,7 @@ function extractToken(req) {
   return authHeader.slice(7);
 }
 
+// Middleware: blocca le chiamate senza token valido
 function requireAuth(req, res, next) {
   const token = extractToken(req);
   if (!token) {
@@ -23,6 +25,7 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Middleware: consente l'accesso solo agli admin
 function requireAdmin(req, res, next) {
   if (!req.user || !req.user.roles?.includes('admin')) {
     return res.status(403).json({ error: 'Admin role required' });
