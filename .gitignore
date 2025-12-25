@@ -1,2 +1,4 @@
 .env
-
+node_modules
+services/api/node_modules
+npm-debug.log
