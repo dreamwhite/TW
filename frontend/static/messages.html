@@ -25,16 +25,20 @@
     </nav>
 
     <div class="app-shell d-flex flex-column flex-lg-row">
-        <aside class="sidebar border-end bg-white">
-            <div class="sidebar-body p-3">
-                <div class="sidebar-heading text-uppercase text-muted small mb-3">Navigazione</div>
-                <nav class="nav flex-row flex-lg-column sidebar-nav gap-2">
-                    <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
-                    <a class="nav-link" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>Sensori</span></a>
-                    <a class="nav-link active" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Log messaggi</span></a>
-                    <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Prima configurazione</span></a>
-                </nav>
+        <aside class="sidebar sidebar-modern">
+            <div class="sidebar-brand">
+                <div class="brand-icon">MQ</div>
+                <div class="brand-text">
+                    <span class="label">MQTT Gateway</span>
+                    <small>HTTP ⇄ MQTT</small>
+                </div>
             </div>
+            <nav class="nav flex-column sidebar-nav gap-2">
+                <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
+                <a class="nav-link" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>Sensori</span></a>
+                <a class="nav-link active" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Log messaggi</span></a>
+                <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Prima configurazione</span></a>
+            </nav>
         </aside>
 
         <main class="app-content flex-grow-1">
