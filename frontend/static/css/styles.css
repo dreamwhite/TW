@@ -83,6 +83,23 @@ table td {
     background-color: transparent;
 }
 
+.badge.bg-secondary-subtle {
+    border: 1px solid rgba(108, 117, 125, 0.35);
+}
+
+.table code {
+    color: inherit;
+    font-size: 0.9rem;
+}
+
+.form-status {
+    font-size: 0.9rem;
+}
+
+.card .small {
+    line-height: 1.4;
+}
+
 @media (max-width: 991.98px) {
     .sidebar {
         flex: 0 0 auto;

@@ -44,98 +44,137 @@
         </aside>
 
         <main class="app-content flex-grow-1">
-            <div class="container py-4">
-                <header class="mb-4 d-flex justify-content-between align-items-center">
+            <div class="container-fluid py-4">
+                <header class="mb-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
                     <div>
-                    <h1 class="h3 mb-2">Sensori MQTT</h1>
-                    <p class="text-muted mb-0">Gestisci i sensori monitorati dal gateway: puoi aggiungere, modificare o rimuovere configurazioni MQTT.</p>
+                        <p class="text-uppercase text-muted small mb-1">Gateway MQTT</p>
+                        <h1 class="h3 mb-2">Sensors dashboard</h1>
+                        <p class="text-muted mb-0">Create, edit, and browse the MQTT sensors managed by the gateway. All changes are saved in Mongo and reflected in the dashboard.</p>
                     </div>
-                    <button class="btn btn-primary" id="newSensorButton">
-                        <i class="fa-solid fa-plus"></i> Aggiungi sensore
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill bg-secondary-subtle text-secondary">Logged-in panel</span>
+                        <button class="btn btn-primary" id="newSensorButton">
+                            <i class="fa-solid fa-plus"></i> New sensor
+                        </button>
+                    </div>
                 </header>
 
                 <div id="sensorsAlert" class="alert d-none" role="alert"></div>
 
-                <section class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <form id="sensorForm" class="row g-3">
-                            <div class="col-12 col-md-6 col-lg-3">
-                                <label for="sensorName" class="form-label">Nome sensore</label>
-                                <input type="text" class="form-control" id="sensorName" placeholder="Temperatura sala" required />
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-3">
-                                <label for="sensorTopic" class="form-label">Topic MQTT</label>
-                                <input type="text" class="form-control" id="sensorTopic" placeholder="gateway/sensors/temp" required />
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-2">
-                                <label for="sensorUnit" class="form-label">Unità</label>
-                                <input type="text" class="form-control" id="sensorUnit" placeholder="°C" />
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-2">
-                                <label for="sensorIcon" class="form-label">Icona (Font Awesome)</label>
-                                <input type="text" class="form-control" id="sensorIcon" placeholder="fa-solid fa-temperature-half" />
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-2">
-                                <label for="sensorType" class="form-label">Tipologia</label>
-                                <select class="form-select" id="sensorType">
-                                    <option value="generic">Generico</option>
-                                    <option value="temperature">Temperatura</option>
-                                    <option value="humidity">Umidità</option>
-                                    <option value="presence">Presenza</option>
-                                    <option value="custom">Personalizzato</option>
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="sensorDescription" class="form-label">Descrizione</label>
-                                <input type="text" class="form-control" id="sensorDescription" placeholder="Sonda in sala riunioni" />
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="sensorThreshold" class="form-label">Soglia avviso</label>
-                                <input type="number" step="any" class="form-control" id="sensorThreshold" placeholder="es. 28" />
-                            </div>
-                            <div class="col-12 col-lg-3 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-success w-100" id="sensorSaveButton">
-                                    <i class="fa-solid fa-floppy-disk"></i> Salva sensore
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary w-100 d-none" id="sensorCancelEdit">
-                                    <i class="fa-solid fa-rotate-left"></i> Annulla
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
+                <div class="row g-4">
+                    <div class="col-12 col-lg-7">
+                        <section class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center mb-3">
+                                    <div>
+                                        <p class="text-uppercase text-muted small mb-1">Sensors</p>
+                                        <h2 class="h5 mb-0">Configured devices</h2>
+                                    </div>
+                                    <div class="ms-md-auto d-flex gap-2 flex-wrap">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                            <input type="search" class="form-control" id="sensorSearch" placeholder="Search by name or topic" />
+                                        </div>
+                                        <select id="sensorTypeFilter" class="form-select form-select-sm">
+                                            <option value="">All types</option>
+                                            <option value="temperature">Temperature</option>
+                                            <option value="humidity">Humidity</option>
+                                            <option value="presence">Presence</option>
+                                            <option value="generic">Generic</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+                                        <button class="btn btn-outline-secondary btn-sm" id="sensorsRefresh">
+                                            <i class="fa-solid fa-rotate"></i> Refresh
+                                        </button>
+                                    </div>
+                                </div>
 
-                <section class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h2 class="h5 mb-0">Sensori registrati</h2>
-                            <button class="btn btn-outline-secondary btn-sm" id="sensorsRefresh">
-                                <i class="fa-solid fa-rotate"></i> Aggiorna
-                            </button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-striped align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Nome</th>
-                                        <th scope="col">Topic</th>
-                                        <th scope="col">Unità</th>
-                                        <th scope="col">Icona</th>
-                                        <th scope="col">Tipologia</th>
-                                        <th scope="col">Soglia</th>
-                                        <th scope="col" class="text-end">Azioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sensorsTableBody">
-                                    <tr class="text-muted">
-                                        <td colspan="7" class="text-center p-4">Nessun sensore configurato.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Topic</th>
+                                                <th scope="col">Type</th>
+                                                <th scope="col">Threshold</th>
+                                                <th scope="col">Updated</th>
+                                                <th scope="col" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sensorsTableBody">
+                                            <tr class="text-muted">
+                                                <td colspan="6" class="text-center p-4">No sensors yet.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                </section>
+
+                    <div class="col-12 col-lg-5">
+                        <section class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="text-uppercase text-muted small mb-1">Form</p>
+                                        <h2 class="h5 mb-0" id="sensorFormTitle">Add a new sensor</h2>
+                                        <small class="text-muted">Provide the MQTT topic and optional metadata (unit, type, threshold).</small>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="sensorCancelEdit">
+                                        <i class="fa-solid fa-rotate-left"></i> Cancel
+                                    </button>
+                                </div>
+                                <div id="sensorFormStatus" class="alert alert-info d-none mb-3 small"></div>
+                                <form id="sensorForm" class="row g-3">
+                                    <div class="col-12">
+                                        <label for="sensorName" class="form-label">Sensor name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="sensorName" placeholder="Room temperature" required />
+                                        <small class="text-muted">Short, recognizable name shown in the dashboard.</small>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="sensorTopic" class="form-label">MQTT topic <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="sensorTopic" placeholder="gateway/sensors/temp" required />
+                                        <small class="text-muted">Exact topic the gateway should subscribe to.</small>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="sensorType" class="form-label">Type</label>
+                                        <select class="form-select" id="sensorType">
+                                            <option value="generic">Generic</option>
+                                            <option value="temperature">Temperature</option>
+                                            <option value="humidity">Humidity</option>
+                                            <option value="presence">Presence</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="sensorUnit" class="form-label">Unit (optional)</label>
+                                        <input type="text" class="form-control" id="sensorUnit" placeholder="°C" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="sensorDescription" class="form-label">Description</label>
+                                        <input type="text" class="form-control" id="sensorDescription" placeholder="Probe in meeting room" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="sensorIcon" class="form-label">Icon (Font Awesome)</label>
+                                        <input type="text" class="form-control" id="sensorIcon" placeholder="fa-solid fa-temperature-half" />
+                                        <small class="text-muted">Paste a Font Awesome class to decorate the sensor.</small>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="sensorThreshold" class="form-label">Threshold (optional)</label>
+                                        <input type="number" step="any" class="form-control" id="sensorThreshold" placeholder="e.g. 28" />
+                                        <small class="text-muted">Numeric value to highlight alerts in the UI.</small>
+                                    </div>
+                                    <div class="col-12 d-grid">
+                                        <button type="submit" class="btn btn-success" id="sensorSaveButton">
+                                            <i class="fa-solid fa-floppy-disk"></i> Save sensor
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

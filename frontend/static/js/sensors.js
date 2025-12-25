@@ -13,6 +13,10 @@ const refreshButton = document.querySelector('#sensorsRefresh');
 const newSensorButton = document.querySelector('#newSensorButton');
 const cancelEditButton = document.querySelector('#sensorCancelEdit');
 const saveButton = document.querySelector('#sensorSaveButton');
+const searchInput = document.querySelector('#sensorSearch');
+const typeFilter = document.querySelector('#sensorTypeFilter');
+const formStatus = document.querySelector('#sensorFormStatus');
+const formTitle = document.querySelector('#sensorFormTitle');
 
 init();
 
@@ -38,8 +42,10 @@ async function init() {
   });
   cancelEditButton.addEventListener('click', () => {
     resetForm();
-    flash('Modifica annullata.', 'info');
+    flash('Edit canceled.', 'info');
   });
+  searchInput.addEventListener('input', renderTable);
+  typeFilter.addEventListener('change', renderTable);
 
   await loadSensors();
 }
@@ -48,13 +54,13 @@ async function loadSensors() {
   try {
     const response = await fetchWithAuth('/api/sensors/', { token: state.token });
     if (!response.ok) {
-      throw new Error('Impossibile caricare i sensori');
+      throw new Error('Unable to load sensors');
     }
     const payload = await response.json();
     state.sensors = payload.items || [];
     renderTable();
   } catch (error) {
-    flash(error.message || 'Errore durante il caricamento dei sensori', 'danger');
+    flash(error.message || 'Error while loading sensors', 'danger');
     console.error(error);
   }
 }
@@ -86,15 +92,15 @@ async function handleSubmit(event) {
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operazione fallita';
+      const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operation failed';
       throw new Error(message);
     }
 
-    flash(state.editingId ? 'Sensore aggiornato con successo.' : 'Sensore creato con successo.', 'success');
+    flash(state.editingId ? 'Sensor updated successfully.' : 'Sensor created successfully.', 'success');
     resetForm();
     await loadSensors();
   } catch (error) {
-    flash(error.message || 'Errore durante il salvataggio del sensore', 'danger');
+    flash(error.message || 'Error while saving the sensor', 'danger');
     console.error(error);
   }
 }
@@ -110,12 +116,12 @@ function collectFormPayload() {
   const threshold = thresholdRaw ? Number(thresholdRaw) : undefined;
 
   if (!name || !topic) {
-    flash('Nome e topic sono obbligatori.', 'danger');
+    flash('Name and topic are required.', 'danger');
     return null;
   }
 
   if (thresholdRaw && Number.isNaN(threshold)) {
-    flash('La soglia deve essere un numero valido.', 'danger');
+    flash('Threshold must be a valid number.', 'danger');
     return null;
   }
 
@@ -124,29 +130,51 @@ function collectFormPayload() {
 
 function renderTable() {
   tableBody.innerHTML = '';
-  if (!state.sensors.length) {
+  const search = searchInput.value.trim().toLowerCase();
+  const type = typeFilter.value;
+
+  const filtered = state.sensors.filter((sensor) => {
+    const matchesText =
+      !search ||
+      (sensor.name || '').toLowerCase().includes(search) ||
+      (sensor.topic || '').toLowerCase().includes(search);
+    const matchesType = !type || sensor.type === type;
+    return matchesText && matchesType;
+  });
+
+  if (!filtered.length) {
     const emptyRow = document.createElement('tr');
-    emptyRow.innerHTML = '<td colspan="7" class="text-center p-4 text-muted">Nessun sensore configurato.</td>';
+    emptyRow.innerHTML = '<td colspan="6" class="text-center p-4 text-muted">No sensors match the current filters. Adjust search or add a new sensor.</td>';
     tableBody.appendChild(emptyRow);
     return;
   }
 
-  state.sensors.forEach((sensor) => {
+  filtered.forEach((sensor) => {
     const row = document.createElement('tr');
+    if (state.editingId === sensor.id) {
+      row.classList.add('table-active');
+    }
     row.innerHTML = `
-      <td>${escapeHtml(sensor.name)}</td>
+      <td>
+        <div class="fw-semibold">${escapeHtml(sensor.name)}</div>
+        <div class="text-muted small">${escapeHtml(sensor.description || 'No description')}</div>
+      </td>
       <td><code>${escapeHtml(sensor.topic)}</code></td>
-      <td>${escapeHtml(sensor.unit || '-')}</td>
-      <td>${sensor.icon ? `<i class="${escapeHtml(sensor.icon)}"></i>` : '-'}</td>
-      <td>${escapeHtml(sensor.type || '-')}</td>
+      <td>
+        <span class="badge bg-light text-dark">${escapeHtml(sensor.type || 'generic')}</span>
+        ${sensor.unit ? `<span class="badge bg-primary-subtle text-primary ms-1">${escapeHtml(sensor.unit)}</span>` : ''}
+      </td>
       <td>${sensor.threshold ?? '-'}</td>
+      <td class="text-muted small">${formatDate(sensor.updated_at || sensor.created_at)}</td>
       <td class="text-end">
-        <button class="btn btn-sm btn-outline-secondary me-2" data-action="edit" data-id="${sensor.id}">
-          <i class="fa-solid fa-pencil"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${sensor.id}">
-          <i class="fa-solid fa-eraser"></i>
-        </button>
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-outline-secondary" data-action="edit" data-id="${sensor.id}">
+            <i class="fa-solid fa-pencil"></i> Edit
+          </button>
+          <button class="btn btn-outline-danger" data-action="delete" data-id="${sensor.id}">
+            <i class="fa-solid fa-eraser"></i> Delete
+          </button>
+        </div>
       </td>
     `;
     row.querySelector('[data-action="edit"]').addEventListener('click', () => startEdit(sensor.id));
@@ -159,6 +187,9 @@ function startEdit(id) {
   const sensor = state.sensors.find((item) => item.id === id);
   if (!sensor) return;
   state.editingId = id;
+  formTitle.textContent = `Editing ${sensor.name}`;
+  formStatus.textContent = `You are editing "${sensor.name}". Save to apply changes or cancel to revert the form.`;
+  formStatus.classList.remove('d-none');
   form.sensorName.value = sensor.name;
   form.sensorTopic.value = sensor.topic;
   form.sensorUnit.value = sensor.unit || '';
@@ -166,13 +197,13 @@ function startEdit(id) {
   form.sensorType.value = sensor.type || 'generic';
   form.sensorDescription.value = sensor.description || '';
   form.sensorThreshold.value = sensor.threshold ?? '';
-  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aggiorna sensore';
+  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update sensor';
   cancelEditButton.classList.remove('d-none');
   form.scrollIntoView({ behavior: 'smooth' });
 }
 
 async function removeSensor(id) {
-  if (!confirm('Confermi la cancellazione del sensore?')) {
+  if (!confirm('Do you want to delete this sensor?')) {
     return;
   }
   try {
@@ -182,16 +213,16 @@ async function removeSensor(id) {
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));
-      const message = payload.error || 'Impossibile cancellare il sensore';
+      const message = payload.error || 'Unable to delete the sensor';
       throw new Error(message);
     }
-    flash('Sensore eliminato.', 'success');
+    flash('Sensor deleted.', 'success');
     if (state.editingId === id) {
       resetForm();
     }
     await loadSensors();
   } catch (error) {
-    flash(error.message || 'Errore durante la cancellazione del sensore', 'danger');
+    flash(error.message || 'Error while deleting the sensor', 'danger');
     console.error(error);
   }
 }
@@ -199,8 +230,10 @@ async function removeSensor(id) {
 function resetForm() {
   state.editingId = null;
   form.reset();
-  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salva sensore';
+  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save sensor';
   cancelEditButton.classList.add('d-none');
+  formStatus.classList.add('d-none');
+  formTitle.textContent = 'Add a new sensor';
 }
 
 function escapeHtml(value) {
@@ -218,4 +251,13 @@ function flash(message, type) {
   flash.timeoutId = setTimeout(() => {
     alertBox.classList.add('d-none');
   }, 3500);
+}
+
+function formatDate(value) {
+  if (!value) return '-';
+  try {
+    return new Date(value).toLocaleString();
+  } catch (error) {
+    return value;
+  }
 }
