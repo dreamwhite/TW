@@ -1,16 +1,16 @@
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY package*.json ./
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN npm ci --omit=dev
 
-COPY app ./app
-COPY scripts ./scripts
-COPY wsgi.py ./wsgi.py
+COPY src ./src
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "wsgi:app"]
+ENV NODE_ENV=production \
+    PORT=5000
+
+EXPOSE 5000
+
+CMD ["node", "src/index.js"]

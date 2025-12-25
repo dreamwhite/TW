@@ -4,13 +4,13 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
 
 ## Stack
 
-- **Backend**: Flask (API REST), MongoDB, JWT, bridge MQTT
+- **Backend**: Node.js (Express), MongoDB, JWT, bridge MQTT (mqtt.js)
 - **Frontend**: HTML minimale basato su Bootstrap 5, JavaScript vanilla serviti da Nginx
 - **Infrastruttura**: Docker, Docker Compose, Nginx reverse proxy, broker Eclipse Mosquitto
 
 ## Struttura del progetto
 
-- `services/api`: codice del backend Flask modulare (auth, MQTT, servizi)
+- `services/api`: backend Express (auth, MQTT bridge, servizi REST)
 - `frontend`: asset statici e Dockerfile di Nginx per servire l'interfaccia
 - `docker-compose.yml`: orchestrazione completa (MongoDB, backend, frontend)
 
@@ -25,6 +25,14 @@ Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un
    ```bash
    docker compose build
    docker compose up
+   ```
+
+   Per avvio rapido del solo backend in locale (senza Docker):
+
+   ```bash
+   cd services/api
+   pnpm install
+   pnpm run local
    ```
 
 3. Visita [http://localhost:8080/setup.html](http://localhost:8080/setup.html) per la configurazione guidata:
@@ -46,39 +54,17 @@ La procedura salva l'utente admin nel database MongoDB e memorizza i parametri M
 - `PUT /api/sensors/:id` — aggiorna un sensore esistente.
 - `DELETE /api/sensors/:id` — rimuove un sensore.
 
-Il websocket è esposto su `/ws` e accetta la connessione con querystring `?token=<JWT>`. Il payload atteso è JSON del tipo:
-
-```json
-{
-  "action": "publish",
-  "topic": "gateway/out",
-  "payload": { "example": true }
-}
-```
-
-In ricezione vengono inviati messaggi JSON con `type` (`connected`, `mqtt_message`, `publish_ack`, `error`).
-
 ## Note progettuali
 
 - Persistenza messaggi in MongoDB (`messages`) con timestamp, topic, direzione e payload (anche raw).
-- Bridge MQTT asincrono basato su `paho-mqtt` con logging automatico dei messaggi in entrata/uscita.
-- Architettura modulare: separazione per auth, servizi, modelli, MQTT, websocket.
+- Bridge MQTT asincrono basato su `mqtt` con logging automatico dei messaggi in entrata/uscita.
+- Architettura minimale: middleware Express per auth JWT, router REST, servizi per Mongo/MQTT.
 - Documentazione aggiuntiva in `docs/` per dettaglio architetturale e flussi.
 
 ### Seeding utenti
 
-- Per garantire l'utente di default usa lo script incluso nell'immagine backend:
-
-  ```bash
-  docker compose run --rm backend python scripts/seed_user.py --ensure-default
-  ```
-
-- Per creare un utente specifico:
-
-  ```bash
-  docker compose run --rm backend \
-    python scripts/seed_user.py --email nuovo@esempio.com --password supersegreta --roles user
-  ```
+- Se non ci sono utenti, il backend crea automaticamente un admin usando `DEFAULT_ADMIN_EMAIL` e `DEFAULT_ADMIN_PASSWORD`.
+- Puoi sempre ripassare dal wizard `/setup.html` per inserire un admin personalizzato e aggiornare la configurazione MQTT.
 
 ### Test rapido interfaccia web
 

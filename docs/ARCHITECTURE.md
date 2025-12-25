@@ -5,7 +5,7 @@
 - Lo stack è composto da tre container principali orchestrati tramite Docker Compose:
 
 - **frontend** (Nginx): serve l'interfaccia statica e funge da reverse proxy per le API REST (`/api`).
-- **backend** (Flask): espone API JSON con autenticazione JWT e incapsula la logica di bridge con il broker MQTT.
+- **backend** (Express): espone API JSON con autenticazione JWT e incapsula la logica di bridge con il broker MQTT.
 - **mongo** (MongoDB): storage persistente di utenti e log dei messaggi transitati.
 
 Il broker MQTT non è incluso nello stack Compose: il gateway si collega a un'istanza esistente, configurabile dal wizard iniziale.
@@ -15,20 +15,20 @@ Tutti i servizi condividono la stessa rete interna Docker; solo il frontend espo
 ## Moduli backend
 
 ```
-services/api/app
-├── auth/          # Registrazione, login, gestione JWT
-├── mqtt/          # Client MQTT (paho-mqtt) e logica di subscribe/publish
-├── routes/        # Blueprint REST (status, messages)
-├── services/      # Servizi applicativi (es. log messaggi su Mongo)
-├── websocket/     # Hub connessioni WebSocket e routing (flask-sock)
-└── extensions.py  # Inizializzazione componenti (Mongo, JWT)
+services/api/src
+├── config.js         # Lettura env + default
+├── db.js             # Connessione Mongo e indici
+├── mqttBridge.js     # MQTT client (mqtt.js) con log automatico
+├── middleware/       # requireAuth/requireAdmin per JWT
+├── routes/           # Auth, status, setup, messages, sensors
+└── services/         # Helper per utenti, sensori, messaggi, settings
 ```
 
-- **AuthService** garantisce un utente admin al bootstrap e gestisce la generazione dei token.
-- **MessageService** centralizza la persistenza dei messaggi con index su `received_at`.
-- **MQTTBridge** mantiene la connessione verso Mosquitto, iscrive ai topic in ascolto e registra i messaggi in Mongo.
-- **SettingsRepository/SetupService** memorizzano lo stato di configurazione iniziale in MongoDB e permettono di impostare utente admin e parametri MQTT al primo avvio.
-- **SensorRepository/Sensors API** forniscono CRUD sui sensori configurati (nome, topic, unità, soglie) così da popolare la dashboard e gestire errori manuali di configurazione.
+- AuthService (funzioni) garantisce un utente admin al bootstrap e gestisce i JWT.
+- MessageService centralizza la persistenza dei messaggi con index su `received_at`.
+- MQTTBridge mantiene la connessione verso Mosquitto, iscrive ai topic in ascolto e registra i messaggi in Mongo.
+- Settings/Setup salvano le info di configurazione (stato wizard, parametri MQTT) in MongoDB.
+- Sensors API forniscono CRUD sui sensori configurati (nome, topic, unità, soglie).
 
 ## Flussi principali
 
@@ -40,7 +40,7 @@ services/api/app
 ### Pubblicazione da interfaccia Web
 1. L'utente autenticato invia un messaggio dal form.
 2. Il browser invia una richiesta REST `POST /api/messages`.
-3. Il backend valida il token, pubblica su MQTT (`paho-mqtt`) e registra l'evento in Mongo.
+3. Il backend valida il token, pubblica su MQTT (`mqtt.js`) e registra l'evento in Mongo.
 4. Il broker recapita il messaggio ad eventuali subscriber; il backend salva comunque il log per la consultazione.
 
 ### Messaggi in arrivo da MQTT
