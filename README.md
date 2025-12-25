@@ -1,101 +1,88 @@
-# Tecnologie Web – Gateway MQTT
+# MQTT Web Gateway
 
-Repository ufficiale per il progetto di Tecnologie Web. L'applicazione espone un gateway che si occupa di trasformare richieste HTTP in eventi MQTT e viceversa, offrendo anche una dashboard minimale per monitorare il traffico.
+Tiny web dashboard and REST gateway that translates HTTP calls into MQTT messages (and logs inbound traffic). Built for course work, kept intentionally simple (Express + Mongo + vanilla JS).
 
-## Stack
+## Features
 
-- **Backend**: Node.js (Express), MongoDB, JWT, bridge MQTT (mqtt.js)
-- **Frontend**: HTML minimale basato su Bootstrap 5, JavaScript vanilla serviti da Nginx
-- **Infrastruttura**: Docker, Docker Compose, Nginx reverse proxy, broker Eclipse Mosquitto
+- JWT-protected REST API (login, sensors CRUD, message publish/logs)
+- MQTT bridge (subscribe + publish) with MongoDB logging
+- Bootstrap-based dashboard served by Nginx
+- Docker Compose stack with Mongo + Mongo Express for quick inspection
+- pnpm scripts to run the full stack or wipe local data
 
-## Struttura del progetto
+## Tech Stack
 
-- `services/api`: backend Express (auth, MQTT bridge, servizi REST)
-- `frontend`: asset statici e Dockerfile di Nginx per servire l'interfaccia
-- `data/mongo`: bind mount con i dati Mongo locali (ignorato da git)
-- `docker-compose.yml`: orchestrazione completa (MongoDB, backend, frontend)
-- `package.json` (root): script pnpm per avvio stack e pulizia dati
+- Backend: Node.js (Express), MongoDB, JWT, mqtt.js
+- Frontend: Static HTML/JS/CSS (Bootstrap 5) served via Nginx
+- Infra: Docker + Docker Compose; external MQTT broker required
 
-> Nota: il gateway si aspetta un broker MQTT già disponibile in rete. Configura host/porta dal wizard iniziale oppure tramite variabili d'ambiente.
-- `.env.example`: variabili d'ambiente richieste dal backend
+## Project Layout
 
-## Avvio rapido
-
-1. Copia il file `.env.example` in `.env` e personalizza i valori sensibili (`JWT_SECRET_KEY`, ecc.).
-2. Avvia lo stack con Docker Compose:
-
-   ```bash
-   docker compose build
-   docker compose up
-   ```
-
-   Per avvio rapido del solo backend in locale (senza Docker):
-
-   ```bash
-   cd services/api
-   pnpm install
-   pnpm run local
-   ```
-
-   Oppure avvia tutto lo stack (frontend + backend + Mongo + mongo-express) con pnpm dalla root:
-
-   ```bash
-   pnpm run stack
-   ```
-
-   Script utili da root:
-
-   - `pnpm run stack:dev` — solo servizi principali (frontend, backend, mongo) con rebuild.
-   - `pnpm run clean` — svuota `data/mongo` per ricominciare da zero.
-
-3. Visita [http://localhost:8080/setup.html](http://localhost:8080/setup.html) per la configurazione guidata:
-   - inserisci email/password dell'amministratore
-   - imposta i parametri del broker MQTT (opzionali)
-   - salva e verrai reindirizzato alla dashboard
-
-La procedura salva l'utente admin nel database MongoDB e memorizza i parametri MQTT. Puoi rieseguirla in ogni momento tramite il link “Prima configurazione” nel menu laterale.
-
-## API principali
-
-- `POST /api/auth/login` — restituisce un JWT da usare nel header `Authorization: Bearer <token>`.
-- `GET /api/status/` — health check pubblico.
-- `GET /api/status/me` — dati utente attuale (JWT necessario).
-- `GET /api/messages?limit=25` — ultimi messaggi MQTT registrati.
-- `POST /api/messages` — pubblica un messaggio su MQTT (richiede body `{ topic?, payload }`).
-- `GET /api/sensors` — elenco sensori configurati.
-- `POST /api/sensors` — crea un nuovo sensore (nome, topic, unità, icona, soglia, ecc.).
-- `PUT /api/sensors/:id` — aggiorna un sensore esistente.
-- `DELETE /api/sensors/:id` — rimuove un sensore.
-
-## Note progettuali
-
-- Persistenza messaggi in MongoDB (`messages`) con timestamp, topic, direzione e payload (anche raw).
-- Bridge MQTT asincrono basato su `mqtt` con logging automatico dei messaggi in entrata/uscita.
-- Architettura minimale: middleware Express per auth JWT, router REST, servizi per Mongo/MQTT.
-- Documentazione aggiuntiva in `docs/` per dettaglio architetturale e flussi.
-
-### Seeding utenti
-
-- Se non ci sono utenti, il backend crea automaticamente un admin usando `DEFAULT_ADMIN_EMAIL` e `DEFAULT_ADMIN_PASSWORD`.
-- Puoi sempre ripassare dal wizard `/setup.html` per inserire un admin personalizzato e aggiornare la configurazione MQTT.
-
-### Test rapido interfaccia web
-
-Per provare la parte web (login + dashboard) è sufficiente avviare backend, frontend e MongoDB:
-
-```bash
-docker compose up --build frontend backend mongo mongo-express
+```
+frontend/           # Static UI + Nginx config
+services/api/       # Express API, MQTT bridge, Mongo services
+data/mongo/         # Bind mount for Mongo data (ignored by git)
+docker-compose.yml  # Orchestration for frontend, backend, mongo, mongo-express
+package.json        # Root pnpm scripts (stack, clean, etc.)
+docs/               # Architecture notes
 ```
 
-Collega il backend al tuo broker MQTT (interno o esterno) dal wizard di setup per testare l'inoltro dei messaggi.
+## Services & Ports (defaults)
 
-### Porte e servizi (default)
+- Frontend + proxy: http://localhost:8080
+- Backend direct: http://localhost:5001 (maps to 5000 in container)
+- MongoDB: mongodb://localhost:27017 (data in `data/mongo`)
+- Mongo Express: http://localhost:8081 (basic auth admin/admin)
 
-- Frontend + proxy: `http://localhost:8080`
-- Backend diretto: `http://localhost:5001` (mappato su 5000 nel container)
-- MongoDB: `mongodb://localhost:27017` (dati persistenti in `data/mongo`)
-- Mongo Express: `http://localhost:8081` (basic auth admin/admin)
+## Quick Start (Docker Compose)
 
-## Studente
+1) Copy env:
+```
+cp .env.example .env
+```
+Fill in MQTT host/creds and change the JWT secret.
+
+2) Start everything:
+```
+pnpm run stack
+```
+or
+```
+docker compose up --build
+```
+
+3) Open the setup wizard: http://localhost:8080/setup.html  
+Create the admin user and (optionally) set MQTT params. The backend marks setup as done and the MQTT bridge starts with those values.
+
+Useful scripts (root):
+- `pnpm run stack:dev` — frontend + backend + mongo with rebuild
+- `pnpm run clean` — wipe `data/mongo` to start fresh
+- Backend only (no Docker): `cd services/api && pnpm install && pnpm run local`
+
+## API Cheatsheet
+
+- `POST /api/auth/login` → returns JWT
+- `GET /api/status/` → health check
+- `GET /api/status/me` → current user (JWT)
+- `GET /api/messages?limit=25` → latest MQTT logs
+- `POST /api/messages` → publish `{ topic?, payload }` via MQTT
+- `GET /api/sensors` → list sensors
+- `POST /api/sensors` → create sensor
+- `PUT /api/sensors/:id` → update sensor
+- `DELETE /api/sensors/:id` → delete sensor
+
+Data model (Mongo collections):
+- `users` (email, password_hash, roles, created_at)
+- `sensors` (name, topic, unit, icon, type, description, threshold, timestamps)
+- `messages` (direction, topic, payload/raw_payload, meta, received_at)
+- `settings` (configured flag + MQTT params)
+
+## Notes
+
+- Default admin is auto-created from env if no users exist.
+- MQTT broker is external; set host/port/user/pass via env or setup wizard.
+- Mongo data lives in `data/mongo` (bind mount, gitignored).
+
+## Student
 
 - Ivan Cafiero — matricola `0124003383`
