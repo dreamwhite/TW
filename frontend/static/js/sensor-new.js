@@ -28,16 +28,16 @@ async function init() {
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operation failed';
+        const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operazione non riuscita';
         throw new Error(message);
       }
 
-      flash('Sensor created. Redirecting to list...', 'success');
+      flash('Sensore creato. Reindirizzamento alla lista...', 'success');
       setTimeout(() => {
         window.location.href = '/sensors.html';
       }, 1200);
     } catch (error) {
-      flash(error.message || 'Error while saving the sensor', 'danger');
+      flash(error.message || 'Errore durante il salvataggio del sensore', 'danger');
       console.error(error);
     }
   });
@@ -54,12 +54,12 @@ function collectPayload() {
   const threshold = thresholdRaw ? Number(thresholdRaw) : undefined;
 
   if (!name || !topic) {
-    flash('Name and topic are required.', 'danger');
+    flash('Nome e topic sono obbligatori.', 'danger');
     return null;
   }
 
   if (thresholdRaw && Number.isNaN(threshold)) {
-    flash('Threshold must be a valid number.', 'danger');
+    flash('La soglia deve essere un numero valido.', 'danger');
     return null;
   }
 

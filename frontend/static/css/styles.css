@@ -178,13 +178,6 @@ table td {
     font-weight: 500;
 }
 
-.sidebar-nav.nested .nav-link::before {
-    content: '•';
-    color: #6b7280;
-    margin-right: 0.35rem;
-    font-size: 0.9rem;
-}
-
 .sidebar-nav.nested .nav-link.active {
     background: #eef2ff;
     color: #0f172a;

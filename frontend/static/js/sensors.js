@@ -51,13 +51,13 @@ async function loadSensors() {
   try {
     const response = await fetchWithAuth('/api/sensors/', { token: state.token });
     if (!response.ok) {
-      throw new Error('Unable to load sensors');
+      throw new Error('Impossibile caricare i sensori');
     }
     const payload = await response.json();
     state.sensors = payload.items || [];
     renderTable();
   } catch (error) {
-    flash(error.message || 'Error while loading sensors', 'danger');
+    flash(error.message || 'Errore durante il caricamento dei sensori', 'danger');
     console.error(error);
   }
 }
@@ -89,18 +89,18 @@ async function handleSubmit(event) {
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operation failed';
+      const message = data.error || Object.values(data.errors || {}).join(', ') || 'Operazione non riuscita';
       throw new Error(message);
     }
 
-    flash(state.editingId ? 'Sensor updated successfully.' : 'Sensor created successfully.', 'success');
+    flash(state.editingId ? 'Sensore aggiornato.' : 'Sensore creato.', 'success');
     resetForm();
     if (editModal) {
       editModal.hide();
     }
     await loadSensors();
   } catch (error) {
-    flash(error.message || 'Error while saving the sensor', 'danger');
+    flash(error.message || 'Errore durante il salvataggio del sensore', 'danger');
     console.error(error);
   }
 }
@@ -116,12 +116,12 @@ function collectFormPayload() {
   const threshold = thresholdRaw ? Number(thresholdRaw) : undefined;
 
   if (!name || !topic) {
-    flash('Name and topic are required.', 'danger');
+    flash('Nome e topic sono obbligatori.', 'danger');
     return null;
   }
 
   if (thresholdRaw && Number.isNaN(threshold)) {
-    flash('Threshold must be a valid number.', 'danger');
+    flash('La soglia deve essere un numero valido.', 'danger');
     return null;
   }
 
@@ -144,7 +144,8 @@ function renderTable() {
 
   if (!filtered.length) {
     const emptyRow = document.createElement('tr');
-    emptyRow.innerHTML = '<td colspan="6" class="text-center p-4 text-muted">No sensors match the current filters. Adjust search or add a new sensor.</td>';
+    emptyRow.innerHTML =
+      '<td colspan="6" class="text-center p-4 text-muted">Nessun sensore trovato. Modifica i filtri o aggiungi un sensore.</td>';
     tableBody.appendChild(emptyRow);
     return;
   }
@@ -157,7 +158,7 @@ function renderTable() {
     row.innerHTML = `
       <td>
         <div class="fw-semibold">${escapeHtml(sensor.name)}</div>
-        <div class="text-muted small">${escapeHtml(sensor.description || 'No description')}</div>
+        <div class="text-muted small">${escapeHtml(sensor.description || 'Nessuna descrizione')}</div>
       </td>
       <td><code>${escapeHtml(sensor.topic)}</code></td>
       <td>
@@ -169,10 +170,10 @@ function renderTable() {
       <td class="text-end">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-outline-secondary" data-action="edit" data-id="${sensor.id}">
-            <i class="fa-solid fa-pencil"></i> Edit
+            <i class="fa-solid fa-pencil"></i> Modifica
           </button>
           <button class="btn btn-outline-danger" data-action="delete" data-id="${sensor.id}">
-            <i class="fa-solid fa-eraser"></i> Delete
+            <i class="fa-solid fa-eraser"></i> Elimina
           </button>
         </div>
       </td>
@@ -187,8 +188,8 @@ function startEdit(id) {
   const sensor = state.sensors.find((item) => item.id === id);
   if (!sensor) return;
   state.editingId = id;
-  formTitle.textContent = `Editing ${sensor.name}`;
-  formStatus.textContent = `You are editing "${sensor.name}". Save to apply changes or cancel to revert the form.`;
+  formTitle.textContent = `Modifica ${sensor.name}`;
+  formStatus.textContent = `Stai modificando "${sensor.name}". Salva per applicare i cambi o annulla.`;
   formStatus.classList.remove('d-none');
   form.sensorName.value = sensor.name;
   form.sensorTopic.value = sensor.topic;
@@ -197,14 +198,14 @@ function startEdit(id) {
   form.sensorType.value = sensor.type || 'generic';
   form.sensorDescription.value = sensor.description || '';
   form.sensorThreshold.value = sensor.threshold ?? '';
-  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update sensor';
+  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aggiorna sensore';
   if (editModal) {
     editModal.show();
   }
 }
 
 async function removeSensor(id) {
-  if (!confirm('Do you want to delete this sensor?')) {
+  if (!confirm('Vuoi eliminare questo sensore?')) {
     return;
   }
   try {
@@ -214,10 +215,10 @@ async function removeSensor(id) {
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));
-      const message = payload.error || 'Unable to delete the sensor';
+      const message = payload.error || 'Impossibile eliminare il sensore';
       throw new Error(message);
     }
-    flash('Sensor deleted.', 'success');
+    flash('Sensore eliminato.', 'success');
     if (state.editingId === id) {
       resetForm();
     }
@@ -226,7 +227,7 @@ async function removeSensor(id) {
     }
     await loadSensors();
   } catch (error) {
-    flash(error.message || 'Error while deleting the sensor', 'danger');
+    flash(error.message || "Errore durante l'eliminazione del sensore", 'danger');
     console.error(error);
   }
 }
@@ -234,9 +235,9 @@ async function removeSensor(id) {
 function resetForm() {
   state.editingId = null;
   form.reset();
-  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save sensor';
+  saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salva sensore';
   formStatus.classList.add('d-none');
-  formTitle.textContent = 'Add a new sensor';
+  formTitle.textContent = 'Aggiungi un nuovo sensore';
 }
 
 function escapeHtml(value) {
