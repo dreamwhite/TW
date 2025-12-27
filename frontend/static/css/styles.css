@@ -1,30 +1,31 @@
 :root {
-    --bg-primary: #0c1224;
-    --bg-secondary: #0f1c3a;
-    --accent: #5dd5c4;
-    --accent-2: #2f80ed;
-    --text-muted: #a4aec4;
-    --card-bg: rgba(255, 255, 255, 0.9);
-    --shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+    --accent: #2563eb;
+    --accent-2: #0ea5e9;
+    --text-muted: #6b7280;
+    --card-bg: #ffffff;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e5e7eb;
 }
 
 body {
     min-height: 100vh;
-    background: radial-gradient(circle at 20% 20%, rgba(93, 213, 196, 0.08), transparent 30%),
-        radial-gradient(circle at 80% 10%, rgba(47, 128, 237, 0.08), transparent 25%),
-        linear-gradient(135deg, #0b1021, #0d1732 55%, #0b1021);
+    background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.05), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.05), transparent 30%),
+        #f5f6fb;
     color: #0f172a;
 }
 
 .navbar {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, #0f1c3a, #0c1224) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    background: #ffffff !important;
 }
 
 .navbar-brand {
     font-weight: 700;
     letter-spacing: 0.01em;
+    color: #0f172a !important;
 }
 
 #loginView {
@@ -33,7 +34,7 @@ body {
 
 .card {
     background: var(--card-bg);
-    border-radius: 16px;
+    border-radius: 12px;
     box-shadow: var(--shadow);
 }
 
@@ -95,43 +96,43 @@ table td {
 }
 
 .sidebar-modern {
-    background: linear-gradient(180deg, #0b1021, #0c1f3f 55%, #0b182f);
-    color: #e6eefc;
-    border-right: none;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    padding: 1.5rem 1.25rem;
+    background: var(--sidebar-bg);
+    color: #0f172a;
+    border-right: 1px solid var(--sidebar-border);
+    box-shadow: none;
+    padding: 1.25rem 1rem;
 }
 
 .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 0.9rem;
-    border-radius: 0.85rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    margin-bottom: 1.25rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.75rem;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    margin-bottom: 1rem;
 }
 
 .brand-icon {
     width: 46px;
     height: 46px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #2f80ed, #56ccf2);
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
     display: grid;
     place-items: center;
-    color: #0b1021;
+    color: #ffffff;
     font-weight: 800;
 }
 
 .brand-text .label {
     display: block;
     font-weight: 700;
-    color: #f5f8ff;
+    color: #0f172a;
 }
 
 .brand-text small {
-    color: rgba(230, 238, 252, 0.7);
+    color: var(--text-muted);
 }
 
 .sidebar-section {
@@ -151,21 +152,21 @@ table td {
     align-items: center;
     gap: 0.55rem;
     font-weight: 600;
-    color: rgba(230, 238, 252, 0.82);
+    color: #1f2937;
     padding: 0.7rem 0.95rem;
     border-radius: 0.7rem;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-nav .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
+    background-color: rgba(37, 99, 235, 0.08);
+    color: #0f172a;
 }
 
 .sidebar-nav .nav-link.active {
-    background: linear-gradient(135deg, rgba(47, 128, 237, 0.9), rgba(86, 204, 242, 0.9));
-    color: #0b1021;
-    box-shadow: 0 0.65rem 1.4rem rgba(47, 128, 237, 0.2);
+    background: rgba(37, 99, 235, 0.12);
+    color: #0f172a;
+    box-shadow: none;
 }
 
 .sidebar-nav .nav-link.active i {
@@ -179,14 +180,14 @@ table td {
 
 .sidebar-nav.nested .nav-link::before {
     content: '•';
-    color: rgba(230, 238, 252, 0.7);
+    color: #9ca3af;
     margin-right: 0.35rem;
     font-size: 0.9rem;
 }
 
 .sidebar-nav.nested .nav-link.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
+    background: rgba(37, 99, 235, 0.08);
+    color: #0f172a;
     box-shadow: none;
 }
 
@@ -199,21 +200,21 @@ table td {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #2f80ed, #56ccf2);
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
     border: none;
 }
 
 .btn-success {
-    background: linear-gradient(135deg, #34d399, #16a085);
+    background: linear-gradient(135deg, #16a34a, #10b981);
     border: none;
 }
 
 .btn-outline-secondary {
-    border-color: rgba(15, 28, 58, 0.35);
+    border-color: rgba(31, 41, 55, 0.35);
 }
 
 .table-hover tbody tr:hover {
-    background-color: rgba(47, 128, 237, 0.06);
+    background-color: rgba(37, 99, 235, 0.05);
 }
 
 @media (max-width: 991.98px) {
