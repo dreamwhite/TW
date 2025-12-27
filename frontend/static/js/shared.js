@@ -2,13 +2,14 @@ export async function ensureConfigured() {
   try {
     const response = await fetch('/api/setup/status');
     if (!response.ok) {
-      return { configured: true, setupRequired: false };
+      return { configured: false, setupRequired: true };
     }
     const payload = await response.json();
     return { configured: !!payload.configured, setupRequired: !payload.configured };
   } catch (error) {
     console.error('Impossibile verificare lo stato di setup', error);
-    return { configured: true, setupRequired: false };
+    // In doubt, force setup so the user can reconfigure
+    return { configured: false, setupRequired: true };
   }
 }
 
