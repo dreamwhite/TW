@@ -39,16 +39,30 @@
                     <small>HTTP ⇄ MQTT</small>
                 </div>
             </div>
-            <nav class="nav flex-column sidebar-nav gap-2">
-                <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
-                <a class="nav-link active" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>Sensori</span></a>
-                <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Log messaggi</span></a>
-                <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Prima configurazione</span></a>
-            </nav>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Main</div>
+                <nav class="nav flex-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/index.html"><i class="fa-solid fa-chart-line me-2"></i><span>Dashboard</span></a>
+                </nav>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Sensors</div>
+                <nav class="nav flex-column sidebar-nav gap-2 nested">
+                    <a class="nav-link active" href="/sensors.html"><i class="fa-solid fa-gauge me-2"></i><span>List sensors</span></a>
+                    <a class="nav-link" href="/sensor-new.html"><i class="fa-solid fa-plus me-2"></i><span>Add sensor</span></a>
+                </nav>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Logs</div>
+                <nav class="nav flex-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/messages.html"><i class="fa-solid fa-envelope-open-text me-2"></i><span>Log messaggi</span></a>
+                    <a class="nav-link nav-setup d-none" href="/setup.html"><i class="fa-solid fa-gear me-2"></i><span>Prima configurazione</span></a>
+                </nav>
+            </div>
         </aside>
 
         <main class="app-content flex-grow-1">
-            <div class="container-fluid py-4">
+            <div class="content-area container-fluid py-4">
                 <header class="mb-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
                     <div>
                         <p class="text-uppercase text-muted small mb-1">Gateway MQTT</p>
