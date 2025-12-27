@@ -36,7 +36,7 @@ export const config = {
     username: process.env.MQTT_USERNAME || '',
     password: process.env.MQTT_PASSWORD || '',
     clientId: process.env.MQTT_CLIENT_ID || 'web-gateway',
-    subscribeTopic: process.env.MQTT_SUBSCRIBE_TOPIC || 'gateway/in/#',
+    subscribeTopic: process.env.MQTT_SUBSCRIBE_TOPIC || '#',
     publishTopic: process.env.MQTT_PUBLISH_TOPIC || 'gateway/out',
     qos: parseNumber(process.env.MQTT_QOS, 1),
   },

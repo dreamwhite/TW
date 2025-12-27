@@ -28,8 +28,8 @@ router.post('/', async (req, res) => {
     username: payload.mqtt_username || config.mqtt.username,
     password: payload.mqtt_password || config.mqtt.password,
     clientId: config.mqtt.clientId,
-    subscribeTopic: config.mqtt.subscribeTopic,
-    publishTopic: config.mqtt.publishTopic,
+    subscribeTopic: payload.mqtt_subscribe_topic || config.mqtt.subscribeTopic,
+    publishTopic: payload.mqtt_publish_topic || config.mqtt.publishTopic,
     qos: config.mqtt.qos,
   };
 
@@ -40,6 +40,8 @@ router.post('/', async (req, res) => {
     mqtt_username: mqttConfig.username,
     mqtt_password: mqttConfig.password,
     mqtt_client_id: mqttConfig.clientId,
+    mqtt_subscribe_topic: mqttConfig.subscribeTopic,
+    mqtt_publish_topic: mqttConfig.publishTopic,
   });
 
   const existing = await findByEmail(adminEmail);

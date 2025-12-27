@@ -29,6 +29,8 @@ async function bootstrap() {
     if (settings.mqtt_username) mqttConfig.username = settings.mqtt_username;
     if (settings.mqtt_password) mqttConfig.password = settings.mqtt_password;
     if (settings.mqtt_client_id) mqttConfig.clientId = settings.mqtt_client_id;
+    if (settings.mqtt_subscribe_topic) mqttConfig.subscribeTopic = settings.mqtt_subscribe_topic;
+    if (settings.mqtt_publish_topic) mqttConfig.publishTopic = settings.mqtt_publish_topic;
     config.mqtt = mqttConfig;
     startBridge(mqttConfig);
   }

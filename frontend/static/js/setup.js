@@ -24,6 +24,8 @@ form.addEventListener('submit', async (event) => {
     mqtt_port: document.querySelector('#mqttPort').value || undefined,
     mqtt_username: document.querySelector('#mqttUsername').value.trim() || undefined,
     mqtt_password: document.querySelector('#mqttPassword').value || undefined,
+    mqtt_subscribe_topic: document.querySelector('#mqttSubscribeTopic').value.trim() || undefined,
+    mqtt_publish_topic: document.querySelector('#mqttPublishTopic').value.trim() || undefined,
   };
 
   try {
