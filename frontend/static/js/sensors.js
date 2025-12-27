@@ -72,6 +72,11 @@ async function handleSubmit(event) {
   try {
     let response;
     if (state.editingId) {
+      const sensorId = (state.editingId || '').trim();
+      if (!sensorId) {
+        flash('Sensore non valido.', 'danger');
+        return;
+      }
       response = await fetchWithAuth(`/api/sensors/${state.editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -187,7 +192,7 @@ function renderTable() {
 function startEdit(id) {
   const sensor = state.sensors.find((item) => item.id === id);
   if (!sensor) return;
-  state.editingId = id;
+  state.editingId = (id || '').trim();
   formTitle.textContent = `Modifica ${sensor.name}`;
   formStatus.textContent = `Stai modificando "${sensor.name}". Salva per applicare i cambi o annulla.`;
   formStatus.classList.remove('d-none');

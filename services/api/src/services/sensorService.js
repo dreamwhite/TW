@@ -43,7 +43,7 @@ async function createSensor(payload) {
 async function updateSensor(id, payload) {
   let objectId;
   try {
-    objectId = new ObjectId(id);
+    objectId = new ObjectId((id || '').trim());
   } catch {
     return null;
   }
@@ -67,7 +67,7 @@ async function updateSensor(id, payload) {
 async function deleteSensor(id) {
   let objectId;
   try {
-    objectId = new ObjectId(id);
+    objectId = new ObjectId((id || '').trim());
   } catch {
     return false;
   }
@@ -78,7 +78,7 @@ async function deleteSensor(id) {
 async function getSensor(id) {
   let objectId;
   try {
-    objectId = new ObjectId(id);
+    objectId = new ObjectId((id || '').trim());
   } catch {
     return null;
   }
