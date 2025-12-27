@@ -1,5 +1,7 @@
 export async function ensureConfigured() {
-  const apiTargets = ['/api/setup/status', 'http://localhost:5001/api/setup/status'];
+  const devHost = `${window.location.protocol}//localhost:5001`;
+  const primary = window.location.port === '8080' ? `${devHost}/api/setup/status` : '/api/setup/status';
+  const apiTargets = [primary, '/api/setup/status', `${devHost}/api/setup/status`];
   try {
     for (const url of apiTargets) {
       try {
