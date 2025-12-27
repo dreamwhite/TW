@@ -63,30 +63,32 @@
 
         <main class="app-content flex-grow-1">
             <div class="content-area container-fluid py-4">
-                <header class="mb-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
-                    <div>
-                        <p class="text-uppercase text-muted small mb-1">Gateway MQTT</p>
-                        <h1 class="h3 mb-2">Dashboard sensori</h1>
-                        <p class="text-muted mb-0">Consulta e modifica i sensori gestiti dal gateway. Usa la pagina di inserimento per aggiungerne di nuovi.</p>
+                <section class="page-hero mb-4">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                        <div>
+                            <div class="eyebrow">Gateway MQTT</div>
+                            <h1 class="h3 hero-title">Dashboard sensori</h1>
+                            <p class="text-muted mb-0">Consulta e modifica i sensori gestiti dal gateway. Usa la pagina di inserimento per aggiungerne di nuovi.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a class="btn btn-primary" href="/sensor-new.html">
+                                <i class="fa-solid fa-plus"></i> Nuovo sensore
+                            </a>
+                            <span class="badge rounded-pill bg-secondary-subtle text-secondary">Gestione sensori</span>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a class="btn btn-primary" href="/sensor-new.html">
-                            <i class="fa-solid fa-plus"></i> Nuovo sensore
-                        </a>
-                        <span class="badge rounded-pill bg-secondary-subtle text-secondary">Gestione sensori</span>
-                    </div>
-                </header>
+                </section>
 
                 <div id="sensorsAlert" class="alert d-none" role="alert"></div>
 
-                <section class="card border-0 shadow-sm">
+                <section class="card border-0 section-card">
                     <div class="card-body">
                         <div class="d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center mb-3">
                             <div>
                                 <p class="text-uppercase text-muted small mb-1">Sensori</p>
                                 <h2 class="h5 mb-0">Dispositivi configurati</h2>
                             </div>
-                            <div class="ms-md-auto d-flex gap-2 flex-wrap">
+                            <div class="ms-md-auto filters-bar">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
                                     <input type="search" class="form-control" id="sensorSearch" placeholder="Cerca per nome o topic" />
