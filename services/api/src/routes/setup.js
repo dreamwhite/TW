@@ -38,6 +38,7 @@ router.post('/', async (req, res) => {
     mqtt_host: mqttConfig.host,
     mqtt_port: mqttConfig.port,
     mqtt_username: mqttConfig.username,
+    mqtt_password: mqttConfig.password,
     mqtt_client_id: mqttConfig.clientId,
   });
 

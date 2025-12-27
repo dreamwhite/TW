@@ -13,6 +13,7 @@ async function fetchSettings() {
     mqtt_host: doc.mqtt_host,
     mqtt_port: doc.mqtt_port,
     mqtt_username: doc.mqtt_username,
+    mqtt_password: doc.mqtt_password,
     mqtt_client_id: doc.mqtt_client_id,
   };
 }
@@ -24,6 +25,7 @@ async function upsertSettings(payload) {
     mqtt_host: payload.mqtt_host,
     mqtt_port: payload.mqtt_port,
     mqtt_username: payload.mqtt_username,
+    mqtt_password: payload.mqtt_password,
     mqtt_client_id: payload.mqtt_client_id,
   };
   Object.keys(toStore).forEach((key) => {
