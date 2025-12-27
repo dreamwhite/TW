@@ -75,4 +75,15 @@ async function deleteSensor(id) {
   return result.deletedCount > 0;
 }
 
-export { listSensors, createSensor, updateSensor, deleteSensor };
+async function getSensor(id) {
+  let objectId;
+  try {
+    objectId = new ObjectId(id);
+  } catch {
+    return null;
+  }
+  const doc = await collection('sensors').findOne({ _id: objectId });
+  return normalize(doc);
+}
+
+export { listSensors, createSensor, updateSensor, deleteSensor, getSensor };

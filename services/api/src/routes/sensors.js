@@ -1,6 +1,7 @@
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { createSensor, deleteSensor, listSensors, updateSensor } from '../services/sensorService.js';
+import { createSensor, deleteSensor, listSensors, updateSensor, getSensor } from '../services/sensorService.js';
+import { latestByTopic } from '../services/messageService.js';
 
 // CRUD sensori configurati
 const router = express.Router();
@@ -69,6 +70,16 @@ router.delete('/:id', requireAuth, async (req, res) => {
     return res.status(404).json({ error: 'Sensore non trovato' });
   }
   return res.json({ status: 'deleted' });
+});
+
+router.get('/:id/values', requireAuth, async (req, res) => {
+  const sensor = await getSensor(req.params.id);
+  if (!sensor) {
+    return res.status(404).json({ error: 'Sensore non trovato' });
+  }
+  const limit = Math.max(1, Math.min(Number(req.query.limit) || 25, 100));
+  const items = await latestByTopic(sensor.topic, limit);
+  return res.json({ sensor, items });
 });
 
 export default router;

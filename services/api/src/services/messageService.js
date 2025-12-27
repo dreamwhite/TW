@@ -56,4 +56,14 @@ async function latest(limit = 50) {
   return items.map(normalize);
 }
 
-export { logMessage, latest };
+async function latestByTopic(topic, limit = 50) {
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 25, 100));
+  const cursor = collection('messages')
+    .find({ topic })
+    .sort({ received_at: -1 })
+    .limit(safeLimit);
+  const items = await cursor.toArray();
+  return items.map(normalize);
+}
+
+export { logMessage, latest, latestByTopic };
