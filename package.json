@@ -4,6 +4,10 @@
   "scripts": {
     "stack": "docker compose up --build",
     "stack:dev": "docker compose up --build frontend backend mongo",
-    "clean": "bash -c \"rm -rf data/mongo && mkdir -p data/mongo\""
+    "clean": "bash -c \"rm -rf data/mongo && mkdir -p data/mongo\"",
+    "dev:frontend": "live-server frontend/static --port=8080 --watch=frontend/static --no-browser"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
   }
 }
