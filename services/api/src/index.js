@@ -44,11 +44,11 @@ async function bootstrap() {
   app.use(morgan('dev'));
 
   // Routing REST
-  app.use('/api/auth', authRoutes);
-  app.use('/api/status', statusRoutes);
-  app.use('/api/messages', messagesRoutes);
-  app.use('/api/sensors', sensorsRoutes);
-  // Support both /api/setup and /setup to avoid proxy/path issues in dev
+  // Support /api/* and plain /* for dev proxies that strip the prefix
+  app.use(['/api/auth', '/auth'], authRoutes);
+  app.use(['/api/status', '/status'], statusRoutes);
+  app.use(['/api/messages', '/messages'], messagesRoutes);
+  app.use(['/api/sensors', '/sensors'], sensorsRoutes);
   app.use(['/api/setup', '/setup'], setupRoutes);
 
   // Fallback error handler minimale
