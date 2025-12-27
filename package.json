@@ -2,8 +2,8 @@
   "name": "tw-stack",
   "private": true,
   "scripts": {
-    "stack": "concurrently -k \"docker compose up --build backend mongo mongo-express\" \"live-server frontend/static --port=8080 --watch=frontend/static --no-browser\"",
-    "dev": "docker compose up --build",
+    "stack": "docker compose up --build",
+    "dev": "concurrently -k \"docker compose up backend mongo mongo-express\" \"live-server frontend/static --port=8080 --watch=frontend/static --no-browser --proxy=/api:http://localhost:5001 --proxy=/ws:http://localhost:5001\"",
     "stack:dev": "docker compose up --build frontend backend mongo",
     "clean": "bash -c \"rm -rf data/mongo && mkdir -p data/mongo\"",
     "dev:frontend": "live-server frontend/static --port=8080 --watch=frontend/static --no-browser"
