@@ -48,7 +48,8 @@ async function bootstrap() {
   app.use('/api/status', statusRoutes);
   app.use('/api/messages', messagesRoutes);
   app.use('/api/sensors', sensorsRoutes);
-  app.use('/api/setup', setupRoutes);
+  // Mount setup also at /setup for dev proxies that strip /api
+  app.use(['/api/setup', '/setup'], setupRoutes);
 
   // Fallback error handler minimale
   app.use((err, _req, res, _next) => {
