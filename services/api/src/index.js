@@ -34,7 +34,9 @@ async function bootstrap() {
     config.mqtt = mqttConfig;
     startBridge(mqttConfig);
     const sensors = await listSensors();
-    syncSensorTopics(sensors.map((s) => s.topic));
+    // Inizializza la mappa sensori per autosubscribe + controllo soglie
+    const { syncSensors } = await import('./mqttBridge.js');
+    syncSensors(sensors);
   }
 
   const app = express();

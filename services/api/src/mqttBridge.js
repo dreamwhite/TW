@@ -5,6 +5,8 @@ import { logMessage } from './services/messageService.js';
 let client;
 let currentConfig = { ...config.mqtt };
 let sensorTopics = new Set();
+let sensorCatalog = new Map(); // topic -> { id, threshold, controlTopic }
+let lastActions = new Map(); // topic -> 'on' | 'off'
 
 function normalizeTopic(topic) {
   const trimmed = (topic || '').trim();
@@ -56,6 +58,7 @@ function unsubscribeTopics(topics) {
 
 // Sincronizza i topic dei sensori (list load a startup o aggiornamenti massivi)
 function syncSensorTopics(topics = []) {
+  // Legacy helper: keeps backward compatibility by only using topics
   const normalized = new Set();
   topics.forEach((raw) => {
     const topic = normalizeTopic(raw);
@@ -69,6 +72,23 @@ function syncSensorTopics(topics = []) {
   if (toAdd.length) subscribeTopics(toAdd);
 
   sensorTopics = normalized;
+}
+
+function syncSensors(sensors = []) {
+  const topics = [];
+  const nextCatalog = new Map();
+  sensors.forEach((sensor) => {
+    const topic = normalizeTopic(sensor.topic);
+    if (!topic) return;
+    topics.push(topic);
+    nextCatalog.set(topic, {
+      id: sensor.id,
+      threshold: sensor.threshold,
+      controlTopic: sensor.control_topic || currentConfig.controlTopic,
+    });
+  });
+  sensorCatalog = nextCatalog;
+  syncSensorTopics(topics);
 }
 
 function addSensorSubscription(topic) {
@@ -135,6 +155,40 @@ function startBridge(overrideConfig = {}) {
         payload,
         meta: { qos },
       });
+
+      const sensor = sensorCatalog.get(topic);
+      if (sensor && sensor.threshold != null) {
+        const parsed = (() => {
+          try {
+            const asJson = JSON.parse(payload);
+            if (typeof asJson === 'number') return asJson;
+            if (asJson && typeof asJson.value === 'number') return asJson.value;
+          } catch {
+            // not JSON
+          }
+          const asNumber = Number(payload);
+          return Number.isNaN(asNumber) ? null : asNumber;
+        })();
+
+        if (parsed != null) {
+          const action = parsed > sensor.threshold ? 'on' : 'off';
+          const last = lastActions.get(topic);
+          if (last !== action) {
+            lastActions.set(topic, action);
+            const controlTopic = sensor.controlTopic || currentConfig.controlTopic;
+            if (controlTopic) {
+              await publish(controlTopic, {
+                sensor_id: sensor.id,
+                sensor_topic: topic,
+                value: parsed,
+                threshold: sensor.threshold,
+                action,
+                at: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to log inbound MQTT message:', error.message);
     }
@@ -180,6 +234,7 @@ export {
   publish,
   getCurrentConfig,
   syncSensorTopics,
+  syncSensors,
   addSensorSubscription,
   removeSensorSubscription,
 };

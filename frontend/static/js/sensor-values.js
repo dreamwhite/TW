@@ -106,6 +106,7 @@ function renderCard(sensor) {
   const status = getSensorStatus(sensor);
   const valueDisplay = latest ? formatValue(latest) : 'N/D';
   const timeDisplay = latest ? formatDate(latest.received_at) : '—';
+  const controlState = status.level === 'alert' ? 'Deumidificatore ON' : 'Deumidificatore OFF';
 
   const col = document.createElement('div');
   col.className = 'col-12 col-md-6 col-xl-4';
@@ -127,10 +128,11 @@ function renderCard(sensor) {
           <div class="sensor-value">${valueDisplay}</div>
           ${sensor.unit ? `<span class="text-muted">${escapeHtml(sensor.unit)}</span>` : ''}
         </div>
-        <div class="d-flex justify-content-between text-muted small">
+        <div class="text-muted small d-flex justify-content-between">
           <span>Soglia: ${sensor.threshold ?? 'N/D'}</span>
-          <span>Aggiornato: ${timeDisplay}</span>
+          <span>${controlState}</span>
         </div>
+        <div class="text-muted small">Aggiornato: ${timeDisplay}</div>
         <div class="mt-auto">
           <button class="btn btn-sm btn-outline-primary" data-sensor="${sensor.id}">Dettagli</button>
         </div>

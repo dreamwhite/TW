@@ -39,6 +39,7 @@ export const config = {
     // Lasciato vuoto di default: i topic dei sensori vengono sottoscritti dinamicamente.
     subscribeTopic: process.env.MQTT_SUBSCRIBE_TOPIC || '',
     publishTopic: process.env.MQTT_PUBLISH_TOPIC || 'gateway/out',
+    controlTopic: process.env.MQTT_CONTROL_TOPIC || '/threshold',
     qos: parseNumber(process.env.MQTT_QOS, 1),
   },
 };

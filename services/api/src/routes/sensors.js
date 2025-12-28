@@ -2,7 +2,7 @@ import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { createSensor, deleteSensor, listSensors, updateSensor, getSensor } from '../services/sensorService.js';
 import { latestByTopic } from '../services/messageService.js';
-import { addSensorSubscription, removeSensorSubscription, syncSensorTopics } from '../mqttBridge.js';
+import { addSensorSubscription, removeSensorSubscription, syncSensors } from '../mqttBridge.js';
 
 // CRUD sensori configurati
 const router = express.Router();
@@ -38,7 +38,7 @@ router.get('/', requireAuth, async (_req, res) => {
 // Forza la risottoscrizione ai topic dei sensori (utile dopo modifiche/config)
 router.post('/resubscribe', requireAuth, async (_req, res) => {
   const items = await listSensors();
-  syncSensorTopics(items.map((s) => s.topic));
+  syncSensors(items);
   res.json({ status: 'ok', subscribed: items.length });
 });
 
@@ -52,6 +52,8 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const sensor = await createSensor(payload);
     addSensorSubscription(sensor.topic);
+    const items = await listSensors();
+    syncSensors(items);
     return res.status(201).json(sensor);
   } catch (error) {
     console.error('Sensor creation error:', error.message);
@@ -79,6 +81,8 @@ router.put('/:id', requireAuth, async (req, res) => {
     removeSensorSubscription(existing.topic);
     addSensorSubscription(updated.topic);
   }
+  const items = await listSensors();
+  syncSensors(items);
   return res.json(updated);
 });
 
@@ -91,6 +95,8 @@ router.delete('/:id', requireAuth, async (req, res) => {
   if (existing?.topic) {
     removeSensorSubscription(existing.topic);
   }
+  const items = await listSensors();
+  syncSensors(items);
   return res.json({ status: 'deleted' });
 });
 
