@@ -67,40 +67,28 @@
                 <div class="sidebar-section">
                     <div class="sidebar-label">Principale</div>
                     <nav class="nav flex-column sidebar-nav gap-2">
-                        <a class="nav-link active" href="/index.html">
-                            <i class="fa-solid fa-chart-line me-2"></i>
-                            <span>Dashboard</span>
-                        </a>
+                        <a class="nav-link active" href="/index.html">Dashboard</a>
                     </nav>
                 </div>
                 <div class="sidebar-section">
                     <div class="sidebar-label">Sensori</div>
                     <nav class="nav flex-column sidebar-nav gap-2 nested">
-                        <a class="nav-link" href="/sensor-values.html">
-                            <i class="fa-solid fa-chart-line me-2"></i>
-                            <span>Stato sensori</span>
-                        </a>
-                        <a class="nav-link" href="/sensors.html">
-                            <i class="fa-solid fa-gauge me-2"></i>
-                            <span>Elenco sensori</span>
-                        </a>
-                        <a class="nav-link" href="/sensor-new.html">
-                            <i class="fa-solid fa-plus me-2"></i>
-                            <span>Aggiungi sensore</span>
-                        </a>
+                        <a class="nav-link" href="/sensor-values.html">Stato sensori</a>
+                        <a class="nav-link" href="/sensors.html">Elenco sensori</a>
+                        <a class="nav-link" href="/sensor-new.html">Aggiungi sensore</a>
                     </nav>
                 </div>
                 <div class="sidebar-section">
                     <div class="sidebar-label">Log</div>
                     <nav class="nav flex-column sidebar-nav gap-2">
-                        <a class="nav-link" href="/messages.html">
-                            <i class="fa-solid fa-envelope-open-text me-2"></i>
-                            <span>Log messaggi</span>
-                        </a>
-                        <a class="nav-link nav-setup d-none" href="/setup.html">
-                            <i class="fa-solid fa-gear me-2"></i>
-                            <span>Prima configurazione</span>
-                        </a>
+                        <a class="nav-link" href="/messages.html">Log messaggi</a>
+                        <a class="nav-link nav-setup d-none" href="/setup.html">Prima configurazione</a>
+                    </nav>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-label">Account</div>
+                    <nav class="nav flex-column sidebar-nav gap-2">
+                        <a class="nav-link" href="/profile.html">Profilo</a>
                     </nav>
                 </div>
             </aside>
@@ -108,9 +96,67 @@
             <main class="app-content flex-grow-1">
                 <div class="content-area container-fluid py-4">
                     <div id="appAlerts" class="alert d-none" role="alert"></div>
+                    <section class="page-hero mb-4">
+                        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                            <div>
+                                <div class="eyebrow">Gateway MQTT</div>
+                                <h1 class="h4 hero-title">Dashboard</h1>
+                                <p class="text-muted mb-0">Panoramica rapida di sensori, alert e messaggi in tempo reale.</p>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-outline-secondary" href="/sensor-values.html">Stato sensori</a>
+                                <a class="btn btn-primary" href="/sensor-new.html">Nuovo sensore</a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-4">
+                                    <div class="p-3 section-card h-100">
+                                        <p class="text-uppercase text-muted small mb-1">Sensori</p>
+                                        <h3 class="mb-1" id="statSensors">—</h3>
+                                        <p class="text-muted small mb-0">Configurati nel gateway</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <div class="p-3 section-card h-100">
+                                        <p class="text-uppercase text-muted small mb-1">Alert attivi</p>
+                                        <h3 class="mb-1" id="statAlerts">—</h3>
+                                        <p class="text-muted small mb-0">Sensori oltre soglia</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <div class="p-3 section-card h-100">
+                                        <p class="text-uppercase text-muted small mb-1">Ultimo messaggio</p>
+                                        <div class="mb-1">
+                                            <div class="fw-semibold small" id="statLastTopic">—</div>
+                                            <div class="text-muted small" id="statLastTime">—</div>
+                                        </div>
+                                        <p class="text-muted small mb-0">Aggiornato in tempo reale</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card border-0 shadow-sm mb-4" id="quickSensors">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0">Stato rapido sensori</h2>
+                            <a href="/sensor-values.html" class="btn btn-outline-primary btn-sm">Vai alla panoramica</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3" id="quickSensorCards">
+                                <div class="col-12 text-center text-muted py-3">Nessun sensore configurato.</div>
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="card border-0 shadow-sm mb-4" id="publish">
-                        <div class="card-header bg-white">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h2 class="h5 mb-0">Pubblica messaggi</h2>
+                            <small class="text-muted">Invia comandi al broker MQTT</small>
                         </div>
                         <div class="card-body">
                             <form id="publishForm" class="row g-3 align-items-end">

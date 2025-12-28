@@ -4,17 +4,17 @@ const state = {
   token: null,
   sensors: [],
   valuesBySensor: new Map(),
-  selectedId: null,
 };
 
 const cardsContainer = document.querySelector('#sensorCards');
 const alertBox = document.querySelector('#valuesAlert');
-const historySection = document.querySelector('#historySection');
-const historyTitle = document.querySelector('#historyTitle');
 const historyBody = document.querySelector('#historyTableBody');
 const sensorFilter = document.querySelector('#sensorFilter');
 const onlyAlerts = document.querySelector('#onlyAlerts');
 const refreshButton = document.querySelector('#refreshValues');
+const historyModalEl = document.getElementById('historyModal');
+const historyModal = historyModalEl ? new bootstrap.Modal(historyModalEl) : null;
+const historyTitle = document.getElementById('historyModalLabel');
 
 init();
 
@@ -28,10 +28,7 @@ async function init() {
   state.token = token;
 
   refreshButton.addEventListener('click', loadData);
-  sensorFilter.addEventListener('change', () => {
-    state.selectedId = sensorFilter.value || null;
-    render();
-  });
+  sensorFilter.addEventListener('change', render);
   onlyAlerts.addEventListener('change', render);
 
   await loadData();
@@ -43,9 +40,8 @@ async function loadData() {
     if (!sensorsRes.ok) throw new Error('Impossibile caricare i sensori');
     const sensorsPayload = await sensorsRes.json();
     state.sensors = sensorsPayload.items || [];
-    if (!state.selectedId && state.sensors.length) {
-      state.selectedId = state.sensors[0].id;
-    }
+    // Assicurati che il backend sia sottoscritto ai topic correnti
+    await fetchWithAuth('/api/sensors/resubscribe', { method: 'POST', token: state.token }).catch(() => {});
     await fetchValues();
     populateSensorFilter();
     render();
@@ -102,8 +98,6 @@ function render() {
   } else {
     sensorsToShow.forEach((sensor) => cardsContainer.appendChild(renderCard(sensor)));
   }
-
-  renderHistory();
 }
 
 function renderCard(sensor) {
@@ -116,62 +110,64 @@ function renderCard(sensor) {
   const col = document.createElement('div');
   col.className = 'col-12 col-md-6 col-xl-4';
   col.innerHTML = `
-    <div class="card h-100 border-0 section-card">
-      <div class="card-body d-flex flex-column gap-2">
+    <div class="card h-100 sensor-card">
+      <div class="card-body d-flex flex-column gap-3">
         <div class="d-flex justify-content-between align-items-start">
           <div>
             <div class="text-uppercase text-muted small mb-1">${escapeHtml(sensor.type || 'generico')}</div>
             <h5 class="mb-1">${escapeHtml(sensor.name)}</h5>
             <div class="text-muted small">Topic: <code>${escapeHtml(sensor.topic)}</code></div>
           </div>
-          <span class="badge rounded-pill ${status.className}">${status.label}</span>
+          <div class="sensor-status ${status.className}">
+            <span class="status-dot"></span>
+            <span class="small fw-semibold">${status.label}</span>
+          </div>
         </div>
-        <div class="fs-4 fw-semibold">${valueDisplay}${sensor.unit ? ` ${escapeHtml(sensor.unit)}` : ''}</div>
-        <div class="text-muted small">Aggiornato: ${timeDisplay}</div>
-        <div class="small text-muted">Soglia: ${sensor.threshold ?? 'N/D'}</div>
-        <div class="d-flex gap-2 flex-wrap mt-auto">
+        <div class="d-flex align-items-baseline gap-2">
+          <div class="sensor-value">${valueDisplay}</div>
+          ${sensor.unit ? `<span class="text-muted">${escapeHtml(sensor.unit)}</span>` : ''}
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Soglia: ${sensor.threshold ?? 'N/D'}</span>
+          <span>Aggiornato: ${timeDisplay}</span>
+        </div>
+        <div class="mt-auto">
           <button class="btn btn-sm btn-outline-primary" data-sensor="${sensor.id}">Dettagli</button>
         </div>
       </div>
     </div>
   `;
   col.querySelector('button').addEventListener('click', () => {
-    state.selectedId = sensor.id;
-    sensorFilter.value = sensor.id;
-    renderHistory();
+    openHistory(sensor);
   });
   return col;
 }
 
-function renderHistory() {
+function openHistory(sensor) {
+  if (!historyModal) return;
+  historyTitle.textContent = `Ultimi messaggi · ${sensor.name}`;
+  const items = state.valuesBySensor.get(sensor.id) || [];
   historyBody.innerHTML = '';
-  if (!state.selectedId) {
-    historySection.classList.add('d-none');
-    return;
-  }
-  historySection.classList.remove('d-none');
-  const sensor = state.sensors.find((s) => s.id === state.selectedId);
-  const items = state.valuesBySensor.get(state.selectedId) || [];
-  historyTitle.textContent = sensor ? `Ultimi messaggi per ${sensor.name}` : 'Ultimi messaggi';
 
   if (!items.length) {
     const empty = document.createElement('tr');
     empty.innerHTML = '<td colspan="4" class="text-center p-4 text-muted">Nessun messaggio disponibile.</td>';
     historyBody.appendChild(empty);
-    return;
+  } else {
+    items.forEach((item) => {
+      const status = evaluateThreshold(sensor, item);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><code>${escapeHtml(item.topic)}</code></td>
+        <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
+        <td class="text-muted small">${formatDate(item.received_at)}</td>
+        <td><span class="badge ${status.className}">${status.label}</span></td>
+      `;
+      historyBody.appendChild(row);
+    });
   }
 
-  items.forEach((item) => {
-    const status = evaluateThreshold(sensor, item);
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td><code>${escapeHtml(item.topic)}</code></td>
-      <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
-      <td class="text-muted small">${formatDate(item.received_at)}</td>
-      <td><span class="badge ${status.className}">${status.label}</span></td>
-    `;
-    historyBody.appendChild(row);
-  });
+  historyModal.show();
 }
 
 function getSensorStatus(sensor) {

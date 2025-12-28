@@ -1,5 +1,19 @@
 import { collection, ObjectId } from '../db.js';
 
+function buildIdFilter(id) {
+  const trimmed = (id || '').trim();
+  if (!trimmed) return null;
+  const clauses = [];
+  try {
+    clauses.push({ _id: new ObjectId(trimmed) });
+  } catch {
+    // ignore
+  }
+  // Sempre aggiungi anche la variante stringa (per documenti legacy o importati)
+  clauses.push({ _id: trimmed });
+  return clauses.length === 1 ? clauses[0] : { $or: clauses };
+}
+
 // Trasforma il documento Mongo in DTO per la dashboard
 function normalize(doc) {
   if (!doc) return null;
@@ -41,12 +55,8 @@ async function createSensor(payload) {
 }
 
 async function updateSensor(id, payload) {
-  let objectId;
-  try {
-    objectId = new ObjectId((id || '').trim());
-  } catch {
-    return null;
-  }
+  const filter = buildIdFilter(id);
+  if (!filter) return null;
 
   const updates = { updated_at: new Date() };
   ['name', 'topic', 'unit', 'icon', 'type', 'description', 'threshold'].forEach((key) => {
@@ -55,34 +65,24 @@ async function updateSensor(id, payload) {
     }
   });
 
-  const result = await collection('sensors').findOneAndUpdate(
-    { _id: objectId },
-    { $set: updates },
-    { returnDocument: 'after' },
-  );
+  const result = await collection('sensors').updateOne(filter, { $set: updates });
+  if (!result.matchedCount) return null;
 
-  return normalize(result.value);
+  const updated = await collection('sensors').findOne(filter);
+  return normalize(updated);
 }
 
 async function deleteSensor(id) {
-  let objectId;
-  try {
-    objectId = new ObjectId((id || '').trim());
-  } catch {
-    return false;
-  }
-  const result = await collection('sensors').deleteOne({ _id: objectId });
+  const filter = buildIdFilter(id);
+  if (!filter) return false;
+  const result = await collection('sensors').deleteOne(filter);
   return result.deletedCount > 0;
 }
 
 async function getSensor(id) {
-  let objectId;
-  try {
-    objectId = new ObjectId((id || '').trim());
-  } catch {
-    return null;
-  }
-  const doc = await collection('sensors').findOne({ _id: objectId });
+  const filter = buildIdFilter(id);
+  if (!filter) return null;
+  const doc = await collection('sensors').findOne(filter);
   return normalize(doc);
 }
 

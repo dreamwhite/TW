@@ -13,8 +13,13 @@ function normalizeUser(doc) {
   };
 }
 
+async function fetchRawByEmail(email) {
+  if (!email) return null;
+  return collection('users').findOne({ email: email.toLowerCase() });
+}
+
 async function findByEmail(email) {
-  return normalizeUser(await collection('users').findOne({ email: email.toLowerCase() }));
+  return normalizeUser(await fetchRawByEmail(email));
 }
 
 async function hasUsers() {
@@ -51,6 +56,38 @@ function issueToken(user) {
   );
 }
 
+// Aggiorna email/password per l'utente autenticato
+async function updateCredentials(currentEmail, { newEmail, currentPassword, newPassword }) {
+  const email = (currentEmail || '').toLowerCase();
+  const user = await fetchRawByEmail(email);
+  if (!user) return { error: 'not_found' };
+
+  const updates = {};
+  let targetEmail = email;
+
+  if (newEmail || newPassword) {
+    const matches = await bcrypt.compare(currentPassword || '', user.password_hash);
+    if (!matches) return { error: 'invalid_password' };
+  }
+
+  if (newEmail && newEmail.toLowerCase() !== email) {
+    const existing = await fetchRawByEmail(newEmail);
+    if (existing) return { error: 'email_taken' };
+    targetEmail = newEmail.toLowerCase();
+    updates.email = targetEmail;
+  }
+
+  if (newPassword) {
+    updates.password_hash = await bcrypt.hash(newPassword, 10);
+  }
+
+  if (!Object.keys(updates).length) return { error: 'no_changes' };
+
+  await collection('users').updateOne({ email }, { $set: updates });
+  const updated = normalizeUser({ ...user, ...updates });
+  return { user: updated };
+}
+
 // Se non esistono utenti, crea l'admin di default da env
 async function ensureDefaultAdmin() {
   if (await hasUsers()) {
@@ -64,4 +101,4 @@ async function ensureDefaultAdmin() {
   return { created: true, email: user.email };
 }
 
-export { authenticate, issueToken, createUser, findByEmail, hasUsers, ensureDefaultAdmin };
+export { authenticate, issueToken, createUser, findByEmail, hasUsers, ensureDefaultAdmin, updateCredentials };

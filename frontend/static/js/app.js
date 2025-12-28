@@ -4,6 +4,9 @@ const state = {
   token: getToken(),
   user: null,
   setupRequired: false,
+  sensors: [],
+  valuesBySensor: new Map(),
+  lastMessage: null,
 };
 
 const loginView = document.querySelector('#loginView');
@@ -16,6 +19,11 @@ const refreshButton = document.querySelector('#refreshButton');
 const userEmailLabel = document.querySelector('#userEmail');
 const logoutButton = document.querySelector('#logoutButton');
 const appAlerts = document.querySelector('#appAlerts');
+const statSensors = document.querySelector('#statSensors');
+const statAlerts = document.querySelector('#statAlerts');
+const statLastTopic = document.querySelector('#statLastTopic');
+const statLastTime = document.querySelector('#statLastTime');
+const quickSensorCards = document.querySelector('#quickSensorCards');
 
 const API_BASE = '/api';
 
@@ -156,7 +164,10 @@ async function loadMessages() {
       throw new Error('Impossibile caricare i messaggi');
     }
     const payload = await response.json();
-    renderMessages(payload.items || []);
+    const items = payload.items || [];
+    state.lastMessage = items[0] || null;
+    renderMessages(items);
+    renderStats();
   } catch (error) {
     flashApp(error.message || 'Errore durante il caricamento dei messaggi', 'danger');
     console.error(error);
@@ -205,7 +216,7 @@ function enterApp(email, { silent = false } = {}) {
   if (!silent) {
     flashApp(`Autenticato come ${email}`, 'success');
   }
-  loadMessages();
+  Promise.all([loadMessages(), loadSensorsSummary()]);
 }
 
 function toggleAppView(isLoggedIn) {
@@ -224,6 +235,98 @@ function setUserEmail(email) {
 
 function resetMessages() {
   messageTableBody.innerHTML = '<tr class="text-muted"><td colspan="4" class="text-center p-4">Effettua il login per visualizzare i messaggi.</td></tr>';
+}
+
+async function loadSensorsSummary() {
+  if (!state.token) return;
+  try {
+    const sensorsRes = await fetchWithAuth('/api/sensors/', { token: state.token });
+    if (!sensorsRes.ok) throw new Error('Impossibile caricare i sensori');
+    const sensorsPayload = await sensorsRes.json();
+    state.sensors = sensorsPayload.items || [];
+
+    const entries = await Promise.all(
+      state.sensors.map(async (sensor) => {
+        try {
+          const res = await fetchWithAuth(`/api/sensors/${sensor.id}/values?limit=1`, { token: state.token });
+          if (!res.ok) throw new Error('Errore');
+          const payload = await res.json();
+          return [sensor.id, payload.items || []];
+        } catch (error) {
+          console.error('Errore caricando valori sensore', sensor.id, error);
+          return [sensor.id, []];
+        }
+      }),
+    );
+    state.valuesBySensor = new Map(entries);
+    renderStats();
+    renderQuickSensors();
+  } catch (error) {
+    flashApp(error.message || 'Errore caricando i sensori', 'danger');
+    console.error(error);
+  }
+}
+
+function renderStats() {
+  if (statSensors) statSensors.textContent = state.sensors.length || 0;
+  const alerting = state.sensors.filter((s) => {
+    const items = state.valuesBySensor.get(s.id) || [];
+    if (!items.length) return false;
+    const status = evaluateThreshold(s, items[0]);
+    return status.level === 'alert';
+  }).length;
+  if (statAlerts) statAlerts.textContent = alerting;
+  if (state.lastMessage) {
+    statLastTopic.textContent = state.lastMessage.topic || '—';
+    statLastTime.textContent = formatDate(state.lastMessage.received_at);
+  } else {
+    statLastTopic.textContent = '—';
+    statLastTime.textContent = '—';
+  }
+}
+
+function renderQuickSensors() {
+  if (!quickSensorCards) return;
+  quickSensorCards.innerHTML = '';
+  if (!state.sensors.length) {
+    const empty = document.createElement('div');
+    empty.className = 'col-12 text-center text-muted py-3';
+    empty.textContent = 'Nessun sensore configurato.';
+    quickSensorCards.appendChild(empty);
+    return;
+  }
+
+  state.sensors.slice(0, 4).forEach((sensor) => {
+    const items = state.valuesBySensor.get(sensor.id) || [];
+    const latest = items[0];
+    const status = latest ? evaluateThreshold(sensor, latest) : { level: 'unknown', label: 'N/D', className: 'bg-secondary-subtle text-secondary' };
+    const valueDisplay = latest ? formatValue(latest) : 'N/D';
+    const updated = latest ? formatDate(latest.received_at) : '—';
+
+    const col = document.createElement('div');
+    col.className = 'col-12 col-md-6 col-xl-3';
+    col.innerHTML = `
+      <div class="card h-100 border-0 section-card">
+        <div class="card-body d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="text-uppercase text-muted small mb-1">${escapeHtml(sensor.type || 'generico')}</div>
+              <h5 class="mb-1">${escapeHtml(sensor.name)}</h5>
+              <div class="text-muted small">Topic: <code>${escapeHtml(sensor.topic)}</code></div>
+            </div>
+            <span class="badge rounded-pill ${status.className}">${status.label}</span>
+          </div>
+          <div class="fs-4 fw-semibold">${valueDisplay}${sensor.unit ? ` ${escapeHtml(sensor.unit)}` : ''}</div>
+          <div class="text-muted small">Aggiornato: ${updated}</div>
+          <div class="small text-muted">Soglia: ${sensor.threshold ?? 'N/D'}</div>
+          <div class="mt-auto">
+            <a href="/sensor-values.html" class="btn btn-sm btn-outline-primary">Vai al dettaglio</a>
+          </div>
+        </div>
+      </div>
+    `;
+    quickSensorCards.appendChild(col);
+  });
 }
 
 function flashApp(message, type = 'info') {
@@ -265,8 +368,37 @@ function formatDate(value) {
 }
 
 function escapeHtml(value) {
-  return value
+  return (value || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function extractNumericValue(item) {
+  if (!item) return NaN;
+  const payload = item.payload;
+  if (typeof payload === 'number') return payload;
+  if (payload && typeof payload === 'object' && typeof payload.value === 'number') return payload.value;
+  const raw = item.raw_payload ?? payload;
+  const num = Number(raw);
+  return Number.isNaN(num) ? NaN : num;
+}
+
+function formatValue(item) {
+  if (!item) return 'N/D';
+  const numeric = extractNumericValue(item);
+  if (!Number.isNaN(numeric)) return numeric;
+  return formatPayload(item.payload ?? item.raw_payload);
+}
+
+function evaluateThreshold(sensor, item) {
+  const threshold = sensor.threshold;
+  const numericValue = extractNumericValue(item);
+  if (threshold == null || Number.isNaN(numericValue)) {
+    return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
+  }
+  if (numericValue > threshold) {
+    return { level: 'alert', label: 'Alert', className: 'bg-danger-subtle text-danger' };
+  }
+  return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
 }

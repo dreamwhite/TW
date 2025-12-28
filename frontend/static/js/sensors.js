@@ -174,12 +174,8 @@ function renderTable() {
       <td class="text-muted small">${formatDate(sensor.updated_at || sensor.created_at)}</td>
       <td class="text-end">
         <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-outline-secondary" data-action="edit" data-id="${sensor.id}">
-            <i class="fa-solid fa-pencil"></i> Modifica
-          </button>
-          <button class="btn btn-outline-danger" data-action="delete" data-id="${sensor.id}">
-            <i class="fa-solid fa-eraser"></i> Elimina
-          </button>
+          <button class="btn btn-outline-secondary" data-action="edit" data-id="${sensor.id}">Modifica</button>
+          <button class="btn btn-outline-danger" data-action="delete" data-id="${sensor.id}">Elimina</button>
         </div>
       </td>
     `;

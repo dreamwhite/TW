@@ -53,5 +53,14 @@ export async function fetchWithAuth(url, options = {}) {
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
-  return fetch(url, { ...options, headers });
+  const needsDevHost = window.location.port === '8080' && url.startsWith('/api');
+  const base = options.baseUrl || (needsDevHost ? `${window.location.protocol}//localhost:5001` : '');
+  const target = base && url.startsWith('/') ? `${base}${url}` : url;
+  const response = await fetch(target, { ...options, headers });
+  const redirectOnUnauthorized = options.redirectOnUnauthorized !== false;
+  if (redirectOnUnauthorized && response.status === 401) {
+    clearToken();
+    window.location.href = '/index.html';
+  }
+  return response;
 }

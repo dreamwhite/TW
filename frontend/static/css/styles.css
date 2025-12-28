@@ -3,16 +3,14 @@
     --accent-2: #0ea5e9;
     --text-muted: #6b7280;
     --card-bg: #ffffff;
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    --sidebar-bg: #f9fafb;
+    --shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    --sidebar-bg: #f8fafc;
     --sidebar-border: #e5e7eb;
 }
 
 body {
     min-height: 100vh;
-    background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.05), transparent 35%),
-        radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.05), transparent 30%),
-        #f5f6fb;
+    background: #f6f8fb;
     color: #0f172a;
 }
 
@@ -35,7 +33,8 @@ body {
 .card {
     background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(15, 23, 42, 0.04);
 }
 
 table td {
@@ -92,11 +91,11 @@ table td {
 }
 
 .page-hero {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(14, 165, 233, 0.06));
-    border: 1px solid rgba(15, 23, 42, 0.05);
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.04);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .page-hero .eyebrow {
@@ -122,10 +121,73 @@ table td {
     min-width: 200px;
 }
 
+.filters-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.filters-inline .form-control {
+    min-width: 220px;
+}
+
+.filters-inline .form-select {
+    min-width: 200px;
+}
+
+.filters-inline .form-check-input {
+    margin-top: 0;
+}
+
 .section-card {
     border-radius: 14px;
     border: 1px solid rgba(15, 23, 42, 0.05);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sensor-card {
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.sensor-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.sensor-status .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: currentColor;
+    display: inline-block;
+}
+
+.sensor-status.bg-success-subtle {
+    background: #ecfdf3;
+    color: #15803d !important;
+}
+
+.sensor-status.bg-danger-subtle {
+    background: #fef2f2;
+    color: #b91c1c !important;
+}
+
+.sensor-status.bg-secondary-subtle {
+    background: #eef2f7;
+    color: #475569 !important;
+}
+
+.sensor-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .sidebar {
@@ -155,7 +217,7 @@ table td {
     width: 46px;
     height: 46px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    background: #0f172a;
     display: grid;
     place-items: center;
     color: #ffffff;
@@ -211,7 +273,7 @@ table td {
 }
 
 .sidebar-nav.nested .nav-link {
-    padding-left: 2.25rem;
+    padding-left: 1.25rem;
     font-weight: 500;
 }
 
@@ -230,13 +292,13 @@ table td {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #2563eb, #0ea5e9);
-    border: none;
+    background: #2563eb;
+    border: 1px solid #1d4ed8;
 }
 
 .btn-success {
-    background: linear-gradient(135deg, #16a34a, #10b981);
-    border: none;
+    background: #16a34a;
+    border: 1px solid #15803d;
 }
 
 .btn-outline-secondary {

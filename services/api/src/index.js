@@ -4,7 +4,7 @@ import morgan from 'morgan';
 
 import { config } from './config.js';
 import { connectMongo } from './db.js';
-import { startBridge } from './mqttBridge.js';
+import { startBridge, syncSensorTopics } from './mqttBridge.js';
 import authRoutes from './routes/auth.js';
 import messagesRoutes from './routes/messages.js';
 import sensorsRoutes from './routes/sensors.js';
@@ -12,6 +12,7 @@ import setupRoutes from './routes/setup.js';
 import statusRoutes from './routes/status.js';
 import { ensureDefaultAdmin } from './services/userService.js';
 import { ensureSetupDocument, fetchSettings } from './services/settingsService.js';
+import { listSensors } from './services/sensorService.js';
 
 // Bootstrap sequenziale: DB -> setup -> MQTT -> server HTTP
 async function bootstrap() {
@@ -30,9 +31,10 @@ async function bootstrap() {
     if (settings.mqtt_password) mqttConfig.password = settings.mqtt_password;
     if (settings.mqtt_client_id) mqttConfig.clientId = settings.mqtt_client_id;
     if (settings.mqtt_subscribe_topic) mqttConfig.subscribeTopic = settings.mqtt_subscribe_topic;
-    if (settings.mqtt_publish_topic) mqttConfig.publishTopic = settings.mqtt_publish_topic;
     config.mqtt = mqttConfig;
     startBridge(mqttConfig);
+    const sensors = await listSensors();
+    syncSensorTopics(sensors.map((s) => s.topic));
   }
 
   const app = express();
@@ -46,12 +48,12 @@ async function bootstrap() {
   app.use(morgan('dev'));
 
   // Routing REST
-  // Support /api/* and plain /* for dev proxies that strip the prefix
-  app.use(['/api/auth', '/auth'], authRoutes);
-  app.use(['/api/status', '/status'], statusRoutes);
-  app.use(['/api/messages', '/messages'], messagesRoutes);
-  app.use(['/api/sensors', '/sensors'], sensorsRoutes);
-  app.use(['/api/setup', '/setup'], setupRoutes);
+  // Espone solo prefisso /api per coerenza con proxy/dev
+  app.use('/api/auth', authRoutes);
+  app.use('/api/status', statusRoutes);
+  app.use('/api/messages', messagesRoutes);
+  app.use('/api/sensors', sensorsRoutes);
+  app.use('/api/setup', setupRoutes);
 
   // Fallback error handler minimale
   app.use((err, _req, res, _next) => {
