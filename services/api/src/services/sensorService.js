@@ -26,6 +26,7 @@ function normalize(doc) {
     type: doc.type || null,
     description: doc.description || null,
     threshold: doc.threshold ?? null,
+    control_topic: doc.control_topic || null,
     created_at: doc.created_at,
     updated_at: doc.updated_at,
   };
@@ -46,6 +47,7 @@ async function createSensor(payload) {
     type: payload.type || null,
     description: payload.description || null,
     threshold: typeof payload.threshold === 'number' ? payload.threshold : payload.threshold ?? null,
+    control_topic: payload.control_topic || null,
     created_at: now,
     updated_at: now,
   };
@@ -59,7 +61,7 @@ async function updateSensor(id, payload) {
   if (!filter) return null;
 
   const updates = { updated_at: new Date() };
-  ['name', 'topic', 'unit', 'icon', 'type', 'description', 'threshold'].forEach((key) => {
+  ['name', 'topic', 'unit', 'icon', 'type', 'description', 'threshold', 'control_topic'].forEach((key) => {
     if (payload[key] !== undefined) {
       updates[key] = payload[key];
     }

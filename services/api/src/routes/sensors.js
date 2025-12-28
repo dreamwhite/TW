@@ -27,6 +27,10 @@ function validatePayload(payload, creating) {
     }
   }
 
+  if ('control_topic' in payload && payload.control_topic != null && typeof payload.control_topic !== 'string') {
+    errors.control_topic = 'Il control topic deve essere una stringa';
+  }
+
   return errors;
 }
 

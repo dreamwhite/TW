@@ -118,6 +118,7 @@ function collectFormPayload() {
   const type = form.sensorType.value || undefined;
   const description = form.sensorDescription.value.trim() || undefined;
   const thresholdRaw = form.sensorThreshold.value;
+  const controlTopic = form.sensorControlTopic?.value.trim() || undefined;
   const threshold = thresholdRaw ? Number(thresholdRaw) : undefined;
 
   if (!name || !topic) {
@@ -130,7 +131,7 @@ function collectFormPayload() {
     return null;
   }
 
-  return { name, topic, unit, icon, type, description, threshold };
+  return { name, topic, unit, icon, type, description, threshold, control_topic: controlTopic };
 }
 
 function renderTable() {
@@ -199,6 +200,9 @@ function startEdit(id) {
   form.sensorType.value = sensor.type || 'generic';
   form.sensorDescription.value = sensor.description || '';
   form.sensorThreshold.value = sensor.threshold ?? '';
+  if (form.sensorControlTopic) {
+    form.sensorControlTopic.value = sensor.control_topic || '';
+  }
   saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aggiorna sensore';
   if (editModal) {
     editModal.show();
