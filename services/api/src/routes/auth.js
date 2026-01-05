@@ -54,21 +54,21 @@ router.put('/profile', requireAuth, async (req, res) => {
   const currentPassword = body.current_password || null;
 
   if (!newEmail && !newPassword) {
-    return res.status(400).json({ error: 'Nessuna modifica richiesta' });
+    return res.status(400).json({ error: 'No changes requested' });
   }
 
   // Richiedi password corrente se si cambia email o password
   if (!currentPassword) {
-    return res.status(400).json({ error: 'Inserisci la password corrente per confermare le modifiche' });
+    return res.status(400).json({ error: 'Enter your current password to confirm changes' });
   }
 
   const result = await updateCredentials(req.user.email, { newEmail, newPassword, currentPassword });
   if (result.error) {
-    if (result.error === 'invalid_password') return res.status(401).json({ error: 'Password corrente non valida' });
-    if (result.error === 'email_taken') return res.status(400).json({ error: 'Email già in uso' });
-    if (result.error === 'no_changes') return res.status(400).json({ error: 'Nessuna modifica rilevata' });
-    if (result.error === 'not_found') return res.status(404).json({ error: 'Utente non trovato' });
-    return res.status(400).json({ error: 'Impossibile aggiornare il profilo' });
+    if (result.error === 'invalid_password') return res.status(401).json({ error: 'Current password is not valid' });
+    if (result.error === 'email_taken') return res.status(400).json({ error: 'Email already in use' });
+    if (result.error === 'no_changes') return res.status(400).json({ error: 'No changes detected' });
+    if (result.error === 'not_found') return res.status(404).json({ error: 'User not found' });
+    return res.status(400).json({ error: 'Unable to update profile' });
   }
 
   const token = issueToken(result.user);

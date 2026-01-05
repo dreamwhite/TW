@@ -106,7 +106,8 @@ function renderCard(sensor) {
   const status = getSensorStatus(sensor);
   const valueDisplay = latest ? formatValue(latest) : 'N/D';
   const timeDisplay = latest ? formatDate(latest.received_at) : '—';
-  const controlState = status.level === 'alert' ? 'Deumidificatore ON' : 'Deumidificatore OFF';
+  const tipo = typeLabel(sensor.type);
+  const controlState = status.level === 'alert' ? 'Azione soglia: attiva' : 'Azione soglia: disattivata';
 
   const col = document.createElement('div');
   col.className = 'col-12 col-md-6 col-xl-4';
@@ -115,7 +116,7 @@ function renderCard(sensor) {
       <div class="card-body d-flex flex-column gap-3">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="text-uppercase text-muted small mb-1">${escapeHtml(sensor.type || 'generico')}</div>
+            <div class="text-uppercase text-muted small mb-1">${escapeHtml(tipo)}</div>
             <h5 class="mb-1">${escapeHtml(sensor.name)}</h5>
             <div class="text-muted small">Topic: <code>${escapeHtml(sensor.topic)}</code></div>
           </div>
@@ -187,7 +188,7 @@ function evaluateThreshold(sensor, item) {
     return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
   }
   if (numericValue > threshold) {
-    return { level: 'alert', label: 'Alert', className: 'bg-danger-subtle text-danger' };
+    return { level: 'alert', label: 'Allarme', className: 'bg-danger-subtle text-danger' };
   }
   return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
 }
@@ -235,6 +236,17 @@ function escapeHtml(value) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function typeLabel(type) {
+  const map = {
+    temperature: 'Temperatura',
+    humidity: 'Umidità',
+    presence: 'Presenza',
+    custom: 'Personalizzato',
+    generic: 'Generico',
+  };
+  return map[type] || 'Generico';
 }
 
 function flash(message, type) {

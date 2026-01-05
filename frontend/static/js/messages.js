@@ -91,7 +91,7 @@ function renderTable() {
   filtered.forEach((item) => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${item.direction || '-'}</td>
+      <td>${formatDirection(item.direction)}</td>
       <td>${item.topic || '-'}</td>
       <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
       <td>${formatDate(item.received_at)}</td>
@@ -105,7 +105,7 @@ function downloadJson() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `messages-${Date.now()}.json`;
+  link.download = `messaggi-${Date.now()}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -134,6 +134,12 @@ function escapeHtml(value) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function formatDirection(direction) {
+  if (direction === 'inbound') return 'Ingresso';
+  if (direction === 'outbound') return 'Uscita';
+  return direction || '-';
 }
 
 function flash(message, type) {

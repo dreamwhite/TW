@@ -186,7 +186,7 @@ function renderMessages(items) {
   items.forEach((item) => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${item.direction || '-'}</td>
+      <td>${formatDirection(item.direction)}</td>
       <td>${item.topic || '-'}</td>
       <td class="payload-json">${escapeHtml(formatPayload(item.payload ?? item.raw_payload))}</td>
       <td>${formatDate(item.received_at)}</td>
@@ -302,18 +302,19 @@ function renderQuickSensors() {
     const status = latest ? evaluateThreshold(sensor, latest) : { level: 'unknown', label: 'N/D', className: 'bg-secondary-subtle text-secondary' };
     const valueDisplay = latest ? formatValue(latest) : 'N/D';
     const updated = latest ? formatDate(latest.received_at) : '—';
+    const tipo = typeLabel(sensor.type);
 
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-xl-3';
     col.innerHTML = `
-      <div class="card h-100 border-0 section-card">
-        <div class="card-body d-flex flex-column gap-2">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="text-uppercase text-muted small mb-1">${escapeHtml(sensor.type || 'generico')}</div>
-              <h5 class="mb-1">${escapeHtml(sensor.name)}</h5>
-              <div class="text-muted small">Topic: <code>${escapeHtml(sensor.topic)}</code></div>
-            </div>
+          <div class="card h-100 border-0 section-card">
+            <div class="card-body d-flex flex-column gap-2">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-uppercase text-muted small mb-1">${escapeHtml(tipo)}</div>
+                  <h5 class="mb-1">${escapeHtml(sensor.name)}</h5>
+                  <div class="text-muted small">Topic: <code>${escapeHtml(sensor.topic)}</code></div>
+                </div>
             <span class="badge rounded-pill ${status.className}">${status.label}</span>
           </div>
           <div class="fs-4 fw-semibold">${valueDisplay}${sensor.unit ? ` ${escapeHtml(sensor.unit)}` : ''}</div>
@@ -367,6 +368,23 @@ function formatDate(value) {
   }
 }
 
+function formatDirection(direction) {
+  if (direction === 'inbound') return 'Ingresso';
+  if (direction === 'outbound') return 'Uscita';
+  return direction || '-';
+}
+
+function typeLabel(type) {
+  const map = {
+    temperature: 'Temperatura',
+    humidity: 'Umidità',
+    presence: 'Presenza',
+    custom: 'Personalizzato',
+    generic: 'Generico',
+  };
+  return map[type] || 'Generico';
+}
+
 function escapeHtml(value) {
   return (value || '')
     .replace(/&/g, '&amp;')
@@ -398,7 +416,7 @@ function evaluateThreshold(sensor, item) {
     return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
   }
   if (numericValue > threshold) {
-    return { level: 'alert', label: 'Alert', className: 'bg-danger-subtle text-danger' };
+    return { level: 'alert', label: 'Allarme', className: 'bg-danger-subtle text-danger' };
   }
   return { level: 'ok', label: 'OK', className: 'bg-success-subtle text-success' };
 }

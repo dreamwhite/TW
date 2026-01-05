@@ -161,6 +161,7 @@ function renderTable() {
     if (state.editingId === sensor.id) {
       row.classList.add('table-active');
     }
+    const typeLabel = labelForType(sensor.type);
     row.innerHTML = `
       <td>
         <div class="fw-semibold">${escapeHtml(sensor.name)}</div>
@@ -168,7 +169,7 @@ function renderTable() {
       </td>
       <td><code>${escapeHtml(sensor.topic)}</code></td>
       <td>
-        <span class="badge bg-light text-dark">${escapeHtml(sensor.type || 'generic')}</span>
+        <span class="badge bg-light text-dark">${escapeHtml(typeLabel)}</span>
         ${sensor.unit ? `<span class="badge bg-primary-subtle text-primary ms-1">${escapeHtml(sensor.unit)}</span>` : ''}
       </td>
       <td>${sensor.threshold ?? '-'}</td>
@@ -260,6 +261,17 @@ function flash(message, type) {
   flash.timeoutId = setTimeout(() => {
     alertBox.classList.add('d-none');
   }, 3500);
+}
+
+function labelForType(type) {
+  const map = {
+    temperature: 'Temperatura',
+    humidity: 'Umidità',
+    presence: 'Presenza',
+    custom: 'Personalizzato',
+    generic: 'Generico',
+  };
+  return map[type] || 'Generico';
 }
 
 function formatDate(value) {

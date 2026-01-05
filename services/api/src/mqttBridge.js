@@ -136,7 +136,7 @@ function startBridge(overrideConfig = {}) {
         }
       });
     } else {
-      console.log('MQTT connected. Nessun topic globale configurato, uso solo quelli dei sensori.');
+      console.log('MQTT connected. No global topic configured, using only sensor topics.');
     }
 
     // Re-iscrizione ai topic dei sensori (utile dopo reconnect)

@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
   const adminPassword = payload.admin_password || '';
 
   if (!adminEmail || !adminPassword) {
-    return res.status(400).json({ error: 'Email e password amministratore sono obbligatorie' });
+    return res.status(400).json({ error: 'Admin email and password are required' });
   }
 
   const mqttConfig = {
@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     username: payload.mqtt_username || config.mqtt.username,
     password: payload.mqtt_password || config.mqtt.password,
     clientId: config.mqtt.clientId,
-    // Nessun topic di subscribe globale: si usano i topic dei singoli sensori
+    // No global wildcard: rely on per-sensor topics
     subscribeTopic: '',
     publishTopic: config.mqtt.publishTopic,
     qos: config.mqtt.qos,

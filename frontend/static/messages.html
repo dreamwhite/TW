@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8" />
-    <title>Log Messaggi · Gateway MQTT</title>
+    <title>Registro messaggi · Gateway MQTT</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/styles.css">
@@ -11,17 +11,18 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/index.html">MQTT Gateway</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMessages" aria-controls="navbarMessages" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMessages" aria-controls="navbarMessages" aria-expanded="false" aria-label="Attiva o disattiva la navigazione">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMessages">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.html">Bacheca</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sensor-values.html">Stato sensori</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sensors.html">Sensori</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sensor-new.html">Nuovo sensore</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/messages.html">Log messaggi</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/messages.html">Registro messaggi</a></li>
                     <li class="nav-item"><a class="nav-link" href="/profile.html">Profilo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/settings.html">Impostazioni MQTT</a></li>
                 </ul>
             </div>
         </div>
@@ -39,7 +40,7 @@
             <div class="sidebar-section">
                 <div class="sidebar-label">Principale</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
-                    <a class="nav-link" href="/index.html">Dashboard</a>
+                    <a class="nav-link" href="/index.html">Bacheca</a>
                 </nav>
             </div>
             <div class="sidebar-section">
@@ -51,9 +52,9 @@
                 </nav>
             </div>
             <div class="sidebar-section">
-                <div class="sidebar-label">Log</div>
+                <div class="sidebar-label">Registro</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
-                    <a class="nav-link active" href="/messages.html">Log messaggi</a>
+                    <a class="nav-link active" href="/messages.html">Registro messaggi</a>
                     <a class="nav-link nav-setup d-none" href="/setup.html">Prima configurazione</a>
                 </nav>
             </div>
@@ -61,6 +62,7 @@
                 <div class="sidebar-label">Account</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
                     <a class="nav-link" href="/profile.html">Profilo</a>
+                    <a class="nav-link" href="/settings.html">Impostazioni MQTT</a>
                 </nav>
             </div>
         </aside>
@@ -69,7 +71,7 @@
             <div class="content-area container-fluid py-4">
                 <header class="mb-4 d-flex align-items-center justify-content-between">
                     <div>
-                        <h1 class="h3 mb-0">Log dei messaggi</h1>
+                        <h1 class="h3 mb-0">Registro dei messaggi</h1>
                         <p class="text-muted mb-0">Storico degli ultimi messaggi MQTT transitati dal gateway.</p>
                     </div>
                     <div class="d-flex gap-2">
@@ -91,8 +93,8 @@
                                 <label for="filterDirection" class="form-label">Direzione</label>
                                 <select class="form-select" id="filterDirection">
                                     <option value="">Tutte</option>
-                                    <option value="inbound">Inbound</option>
-                                    <option value="outbound">Outbound</option>
+                                    <option value="inbound">Ingresso</option>
+                                    <option value="outbound">Uscita</option>
                                 </select>
                             </div>
                             <div class="col-12 col-lg-4">
@@ -119,7 +121,7 @@
                                     <tr>
                                         <th scope="col">Direzione</th>
                                         <th scope="col">Topic</th>
-                                        <th scope="col">Payload</th>
+                                        <th scope="col">Contenuto</th>
                                         <th scope="col">Ricevuto</th>
                                     </tr>
                                 </thead>

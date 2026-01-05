@@ -11,17 +11,18 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/index.html">MQTT Gateway</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSensors" aria-controls="navbarSensors" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSensors" aria-controls="navbarSensors" aria-expanded="false" aria-label="Attiva o disattiva la navigazione">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSensors">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.html">Bacheca</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sensor-values.html">Stato sensori</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sensors.html">Sensori</a></li>
                     <li class="nav-item"><a class="nav-link active" aria-current="page" href="/sensor-new.html">Nuovo sensore</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/messages.html">Log messaggi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/messages.html">Registro messaggi</a></li>
                     <li class="nav-item"><a class="nav-link" href="/profile.html">Profilo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/settings.html">Impostazioni MQTT</a></li>
                 </ul>
             </div>
         </div>
@@ -39,7 +40,7 @@
             <div class="sidebar-section">
                 <div class="sidebar-label">Principale</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
-                    <a class="nav-link" href="/index.html">Dashboard</a>
+                    <a class="nav-link" href="/index.html">Bacheca</a>
                 </nav>
             </div>
             <div class="sidebar-section">
@@ -51,9 +52,9 @@
                 </nav>
             </div>
             <div class="sidebar-section">
-                <div class="sidebar-label">Log</div>
+                <div class="sidebar-label">Registro</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
-                    <a class="nav-link" href="/messages.html">Log messaggi</a>
+                    <a class="nav-link" href="/messages.html">Registro messaggi</a>
                     <a class="nav-link nav-setup d-none" href="/setup.html">Prima configurazione</a>
                 </nav>
             </div>
@@ -61,6 +62,7 @@
                 <div class="sidebar-label">Account</div>
                 <nav class="nav flex-column sidebar-nav gap-2">
                     <a class="nav-link" href="/profile.html">Profilo</a>
+                    <a class="nav-link" href="/settings.html">Impostazioni MQTT</a>
                 </nav>
             </div>
         </aside>
@@ -107,7 +109,7 @@
                             <div class="col-12">
                                 <label for="sensorControlTopic" class="form-label">Control topic (opzionale)</label>
                                 <input type="text" class="form-control" id="sensorControlTopic" placeholder="/threshold" />
-                                <div class="form-text">Topic su cui pubblicare l'azione ON/OFF quando si supera la soglia.</div>
+                                <div class="form-text">Topic su cui pubblicare l'azione di attivazione/disattivazione quando si supera la soglia.</div>
                             </div>
                             <div class="col-12">
                                 <label for="sensorIcon" class="form-label">Icona (Font Awesome)</label>

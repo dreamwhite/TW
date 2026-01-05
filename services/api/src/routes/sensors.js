@@ -11,24 +11,24 @@ function validatePayload(payload, creating) {
   const errors = {};
 
   if (creating) {
-    if (!payload.name) errors.name = 'Il nome è obbligatorio';
-    if (!payload.topic) errors.topic = 'Il topic MQTT è obbligatorio';
+    if (!payload.name) errors.name = 'Name is required';
+    if (!payload.topic) errors.topic = 'MQTT topic is required';
   } else {
-    if ('name' in payload && !payload.name) errors.name = 'Il nome non può essere vuoto';
-    if ('topic' in payload && !payload.topic) errors.topic = 'Il topic non può essere vuoto';
+    if ('name' in payload && !payload.name) errors.name = 'Name cannot be empty';
+    if ('topic' in payload && !payload.topic) errors.topic = 'Topic cannot be empty';
   }
 
   if ('threshold' in payload) {
     const value = payload.threshold;
     if (value !== undefined && value !== null && Number.isNaN(Number(value))) {
-      errors.threshold = 'La soglia deve essere numerica';
+      errors.threshold = 'Threshold must be numeric';
     } else if (value !== undefined && value !== null) {
       payload.threshold = Number(value);
     }
   }
 
   if ('control_topic' in payload && payload.control_topic != null && typeof payload.control_topic !== 'string') {
-    errors.control_topic = 'Il control topic deve essere una stringa';
+    errors.control_topic = 'Control topic must be a string';
   }
 
   return errors;
@@ -60,7 +60,7 @@ router.post('/', requireAuth, async (req, res) => {
     syncSensors(items);
     return res.status(201).json(sensor);
   } catch (error) {
-    console.error('Sensor creation error:', error.message);
+    console.error('Errore durante la creazione del sensore:', error.message);
     return res.status(400).json({ error: error.message });
   }
 });
@@ -94,7 +94,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
   const existing = await getSensor(req.params.id);
   const deleted = await deleteSensor(req.params.id);
   if (!deleted) {
-    return res.status(404).json({ error: 'Sensore non trovato' });
+    return res.status(404).json({ error: 'Sensor not found' });
   }
   if (existing?.topic) {
     removeSensorSubscription(existing.topic);
@@ -107,7 +107,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 router.get('/:id/values', requireAuth, async (req, res) => {
   const sensor = await getSensor(req.params.id);
   if (!sensor) {
-    return res.status(404).json({ error: 'Sensore non trovato' });
+    return res.status(404).json({ error: 'Sensor not found' });
   }
   const limit = Math.max(1, Math.min(Number(req.query.limit) || 25, 100));
   const items = await latestByTopic(sensor.topic, limit);
