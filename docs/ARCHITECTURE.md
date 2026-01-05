@@ -6,6 +6,7 @@
 - **backend (Express)**: REST API with JWT auth, setup wizard endpoints, and MQTT bridge. Exposes port 5000 internally, published as 5001.
 - **mongo**: MongoDB instance; data lives in `./data/mongo` (bind mount).
 - **mongo-express**: admin UI on port 8081 (basic auth `admin/admin` by default).
+- **mosquitto (optional)**: local MQTT broker on 1883 for demo/testing; can be replaced with an external broker.
 
 The MQTT broker is *not* in the stack. Point the bridge to your broker via `.env` or through the setup wizard.
 

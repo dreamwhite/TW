@@ -129,6 +129,7 @@ docker compose up --build
 | backend | Node/Express API | 5001 (maps to 5000 in container) |
 | mongo | MongoDB | 27017 |
 | mongo-express | Mongo UI | 8081 |
+| mosquitto (optional) | MQTT broker | 1883 |
 
 ---
 
@@ -151,6 +152,7 @@ Key settings:
 - `MQTT_*` — broker host/port/creds/topics/QoS
 - `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` — auto-create admin if DB is empty
 - `CORS_ALLOWED_ORIGINS` — allowed origins for the API
+- `MQTT_BROKER_HOST`, `MQTT_BROKER_PORT` — point to your broker (default `mosquitto` in Compose)
 
 ---
 

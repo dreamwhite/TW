@@ -13,7 +13,7 @@ The backend exposes a small REST surface under `/api` and forwards publish/subsc
 - `PUT /api/settings/mqtt` — updates MQTT connection and restarts the bridge. Body fields:
   ```json
   {
-    "mqtt_host": "mqtt.local",
+    "mqtt_host": "mosquitto",
     "mqtt_port": 1883,
     "mqtt_username": "demo",
     "mqtt_password": "secret",         // omit to keep, "" to clear
