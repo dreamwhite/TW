@@ -1,67 +1,44 @@
-# Gateway Architecture
+# Architecture
 
-## Overview
+## Containers and boundaries
 
-Compose brings up four main containers:
+- **frontend (Nginx)**: serves `frontend/static` and reverse-proxies `/api` and `/ws` to the backend.
+- **backend (Express)**: REST API with JWT auth, setup wizard endpoints, and MQTT bridge. Exposes port 5000 internally, published as 5001.
+- **mongo**: MongoDB instance; data lives in `./data/mongo` (bind mount).
+- **mongo-express**: admin UI on port 8081 (basic auth `admin/admin` by default).
 
-- **frontend** (Nginx): serves static UI and reverse-proxies `/api` to the backend.
-- **backend** (Express): REST API with JWT auth and MQTT bridge (publish/subscribe + logging).
-- **mongo** (MongoDB): persistent storage for users, settings, sensors, and message logs (bind mount `./data/mongo`).
-- **mongo-express**: web UI to browse Mongo (port 8081, basic auth admin/admin).
+The MQTT broker is *not* in the stack. Point the bridge to your broker via `.env` or through the setup wizard.
 
-MQTT broker is external; configure host/port/creds via setup wizard or env.
-
-Default ports:
-- Frontend/proxy: 8080
-- Backend direct: 5001 (maps to 5000 in container)
-- Mongo: 27017 (`data/mongo` for persistence)
-- Mongo Express: 8081
-
-## Backend modules
+## Backend layout
 
 ```
 services/api/src
-├── config.js         # Env parsing + defaults
-├── db.js             # Mongo connection + indexes
-├── mqttBridge.js     # mqtt.js client with inbound/outbound logging
-├── middleware/       # JWT guards (requireAuth/requireAdmin)
-├── routes/           # Auth, status, setup, messages, sensors
-└── services/         # Helpers for users, sensors, messages, settings
+├── config.js          # Env parsing + defaults (JWT, Mongo, MQTT)
+├── db.js              # Mongo connection helper + ObjectId export
+├── mqttBridge.js      # mqtt.js client, auto-subscribe, logging, threshold control
+├── middleware/        # JWT guards (requireAuth, requireAdmin)
+├── routes/            # Auth, status, setup, messages, sensors
+└── services/          # Business logic for users, sensors, messages, settings
 ```
 
-- User service seeds default admin (env) and issues JWTs.
-- Message service logs MQTT traffic with an index on `received_at`.
-- MQTT bridge manages connection, subscribe, and publish with logging.
-- Settings/setup store wizard state + MQTT params in Mongo.
-- Sensors API exposes CRUD for configured devices/topics.
+Highlights
+- **User service** seeds a default admin (from env) if DB is empty, and issues JWTs.
+- **Settings service** stores wizard output (`configured` flag + MQTT params) in `settings`.
+- **Sensor service** keeps metadata (topic, threshold, control topic) and feeds auto-subscriptions.
+- **Message service** logs inbound/outbound traffic with parsed + raw payloads.
+- **MQTT bridge** merges env and stored settings, subscribes to sensor topics and optional wildcard, publishes on demand.
 
-## Main flows
+## Data flow (happy path)
 
-### Auth
-1. Client calls `POST /api/auth/login` with credentials.
-2. Backend validates via Mongo, returns a JWT.
-3. Subsequent calls include `Authorization: Bearer <token>`.
+1. **Setup** — Wizard calls `/api/setup/complete` to create admin + save MQTT params; `configured=true` stored in Mongo.
+2. **Auth** — User logs in via `/api/auth/login`; JWT returned and sent on subsequent requests.
+3. **Publish** — UI posts to `/api/messages`; backend validates JWT, publishes via mqtt.js, logs as `outbound`.
+4. **Inbound** — Broker sends messages on subscribed topics; bridge logs as `inbound`; UI fetches `/api/messages` to render history.
+5. **Sensors** — CRUD via `/api/sensors`; updates trigger `syncSensors` to refresh subscriptions and optional threshold control publishing.
 
-### Publish from the UI
-1. Logged-in user posts a message from the form.
-2. Browser sends `POST /api/messages`.
-3. Backend verifies JWT, publishes via MQTT (`mqtt.js`), logs to Mongo.
-4. Broker delivers to subscribers; log stays for dashboard.
+## Security and networking
 
-### Inbound MQTT
-1. `MQTTBridge` receives a payload on the subscribed topic.
-2. Message is normalized and stored in Mongo with direction `inbound`.
-3. Frontend fetches latest logs via `GET /api/messages`.
-
-## Security
-
-- JWT (HS256) required for protected routes.
-- Mongo and backend are network-local in Compose; only frontend and mongo-express expose ports.
-- Secrets live in `.env`; change JWT secret before shipping.
-
-## Future work
-
-- Finer-grained roles/permissions.
-- Richer dashboard (filters, charts, real-time view).
-- TLS for Nginx/MQTT in non-local environments.
-- Wizard improvements (advanced validation, MQTT connectivity test).
+- JWT (HS256) for protected routes; secret set via `.env`.
+- CORS origins controlled by `CORS_ALLOWED_ORIGINS`.
+- Only frontend (8080), backend (5001), and mongo-express (8081) publish ports; Mongo stays internal to Docker unless explicitly mapped.
+- Secrets and broker creds should be rotated before deploying outside local/dev.
