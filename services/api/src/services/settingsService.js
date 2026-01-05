@@ -15,6 +15,10 @@ async function fetchSettings() {
     mqtt_username: doc.mqtt_username,
     mqtt_password: doc.mqtt_password,
     mqtt_client_id: doc.mqtt_client_id,
+    mqtt_subscribe_topic: doc.mqtt_subscribe_topic,
+    mqtt_publish_topic: doc.mqtt_publish_topic,
+    mqtt_control_topic: doc.mqtt_control_topic,
+    mqtt_qos: doc.mqtt_qos,
   };
 }
 
@@ -27,6 +31,10 @@ async function upsertSettings(payload) {
     mqtt_username: payload.mqtt_username,
     mqtt_password: payload.mqtt_password,
     mqtt_client_id: payload.mqtt_client_id,
+    mqtt_subscribe_topic: payload.mqtt_subscribe_topic,
+    mqtt_publish_topic: payload.mqtt_publish_topic,
+    mqtt_control_topic: payload.mqtt_control_topic,
+    mqtt_qos: payload.mqtt_qos,
   };
   Object.keys(toStore).forEach((key) => {
     if (toStore[key] === undefined) {

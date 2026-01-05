@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <title>Impostazioni MQTT · Gateway MQTT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/index.html">MQTT Gateway</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSettings" aria-controls="navbarSettings" aria-expanded="false" aria-label="Attiva o disattiva la navigazione">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSettings">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/index.html">Bacheca</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sensor-values.html">Stato sensori</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sensors.html">Sensori</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sensor-new.html">Nuovo sensore</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/messages.html">Registro messaggi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/profile.html">Profilo</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/settings.html">Impostazioni MQTT</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-shell d-flex flex-column flex-lg-row">
+        <aside class="sidebar sidebar-modern">
+            <div class="sidebar-brand">
+                <div class="brand-icon">MQ</div>
+                <div class="brand-text">
+                    <span class="label">MQTT Gateway</span>
+                    <small>HTTP ⇄ MQTT</small>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Principale</div>
+                <nav class="nav flex-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/index.html">Bacheca</a>
+                </nav>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Sensori</div>
+                <nav class="nav flex-column sidebar-nav gap-2 nested">
+                    <a class="nav-link" href="/sensor-values.html">Stato sensori</a>
+                    <a class="nav-link" href="/sensors.html">Elenco sensori</a>
+                    <a class="nav-link" href="/sensor-new.html">Aggiungi sensore</a>
+                </nav>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Registro</div>
+                <nav class="nav flex-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/messages.html">Registro messaggi</a>
+                    <a class="nav-link nav-setup d-none" href="/setup.html">Prima configurazione</a>
+                </nav>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Account</div>
+                <nav class="nav flex-column sidebar-nav gap-2">
+                    <a class="nav-link" href="/profile.html">Profilo</a>
+                    <a class="nav-link active" href="/settings.html">Impostazioni MQTT</a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="app-content flex-grow-1">
+            <div class="content-area container-fluid py-4">
+                <section class="page-hero mb-4">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                        <div>
+                            <div class="eyebrow">Connessione broker</div>
+                            <h1 class="h4 hero-title mb-1">Impostazioni MQTT</h1>
+                            <p class="text-muted mb-0">Aggiorna host, porta e credenziali del broker. Le modifiche riavviano il ponte MQTT.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-secondary" href="/index.html">Torna alla dashboard</a>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="settingsAlert" class="alert d-none" role="alert"></div>
+
+                <section class="card border-0 section-card">
+                    <div class="card-body">
+                        <form id="settingsForm" class="row g-3">
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttHost" class="form-label">Host MQTT</label>
+                                <input type="text" class="form-control" id="mqttHost" placeholder="mqtt.local" required />
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="mqttPort" class="form-label">Porta</label>
+                                <input type="number" min="1" class="form-control" id="mqttPort" placeholder="1883" required />
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="mqttClientId" class="form-label">ID client (opzionale)</label>
+                                <input type="text" class="form-control" id="mqttClientId" placeholder="web-gateway" />
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="mqttUsername" placeholder="utente (se richiesto)" />
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="mqttPassword" placeholder="Lascia vuoto per mantenere quella attuale" />
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" value="" id="clearPassword">
+                                    <label class="form-check-label small text-muted" for="clearPassword">
+                                        Cancella la password salvata
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttSubscribeTopic" class="form-label">Topic di sottoscrizione (wildcard, opzionale)</label>
+                                <input type="text" class="form-control" id="mqttSubscribeTopic" placeholder="gateway/in/#" />
+                                <small class="text-muted">Se vuoto, il ponte usa solo i topic dei sensori configurati.</small>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttPublishTopic" class="form-label">Topic di pubblicazione predefinito (opzionale)</label>
+                                <input type="text" class="form-control" id="mqttPublishTopic" placeholder="gateway/out" />
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label for="mqttControlTopic" class="form-label">Topic di controllo soglie (opzionale)</label>
+                                <input type="text" class="form-control" id="mqttControlTopic" placeholder="/threshold" />
+                                <small class="text-muted">Usato per inviare comandi on/off quando un sensore supera la soglia.</small>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="mqttQos" class="form-label">QoS</label>
+                                <select class="form-select" id="mqttQos">
+                                    <option value="">Predefinito (1)</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                </select>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" id="settingsSave">Salva impostazioni</button>
+                                <a class="btn btn-outline-secondary" href="/index.html">Annulla</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/settings.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -8,6 +8,24 @@ The backend exposes a small REST surface under `/api` and forwards publish/subsc
 - `GET /api/status/` — health check.
 - `GET /api/status/me` — returns current user info (requires JWT).
 
+## Settings (MQTT) — admin only
+- `GET /api/settings/mqtt` — returns current MQTT config (merged env + stored): `mqtt_host`, `mqtt_port`, `mqtt_username`, `mqtt_client_id`, `mqtt_subscribe_topic`, `mqtt_publish_topic`, `mqtt_control_topic`, `mqtt_qos`, `has_password`, `configured`.
+- `PUT /api/settings/mqtt` — updates MQTT connection and restarts the bridge. Body fields:
+  ```json
+  {
+    "mqtt_host": "mqtt.local",
+    "mqtt_port": 1883,
+    "mqtt_username": "demo",
+    "mqtt_password": "secret",         // omit to keep, "" to clear
+    "mqtt_client_id": "web-gateway",
+    "mqtt_subscribe_topic": "gateway/in/#",
+    "mqtt_publish_topic": "gateway/out",
+    "mqtt_control_topic": "/threshold",
+    "mqtt_qos": 1
+  }
+  ```
+  Host and port are required; QoS must be 0/1/2. Password is not returned in responses.
+
 ## Messages
 - `GET /api/messages?limit=25` — latest MQTT logs (inbound + outbound), sorted by `received_at` desc; `limit` max 100.
 - `POST /api/messages` — publish and log outbound traffic. Body:

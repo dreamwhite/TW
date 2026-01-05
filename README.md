@@ -159,6 +159,7 @@ Key settings:
 - Default publish topic: `MQTT_PUBLISH_TOPIC` (fallback `gateway/out`).
 - Default subscribe wildcard: optional `MQTT_SUBSCRIBE_TOPIC`; per-sensor topics auto-subscribed from Mongo.
 - Sensors support optional `threshold` and `control_topic` to push control messages when thresholds change.
+- To change broker host/port/creds after the wizard, use `/settings.html` (admin) which updates the `settings` collection and restarts the bridge.
 
 ---
 

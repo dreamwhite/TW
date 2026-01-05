@@ -20,8 +20,8 @@ mongosh "mongodb://localhost:27017/gateway"
 - Creation: on first boot, if DB is empty, `ensureDefaultAdmin` seeds an admin using `.env` (`DEFAULT_ADMIN_EMAIL`/`DEFAULT_ADMIN_PASSWORD`). The setup wizard also creates the admin if missing.
 
 `settings` (singleton, `_id: "global"`)
-- Shape: `_id` (string `"global"`), `configured` (bool), `mqtt_host`, `mqtt_port` (number), `mqtt_username`, `mqtt_password`, `mqtt_client_id`.
-- Lifecycle: `ensureSetupDocument` creates `{ configured: false }` if absent. The setup wizard writes MQTT host/port/creds/client_id and sets `configured=true`. Topics/QoS/control topic continue to come from env unless you edit `.env` and restart.
+- Shape: `_id` (string `"global"`), `configured` (bool), `mqtt_host`, `mqtt_port` (number), `mqtt_username`, `mqtt_password`, `mqtt_client_id`, `mqtt_subscribe_topic`, `mqtt_publish_topic`, `mqtt_control_topic`, `mqtt_qos`.
+- Lifecycle: `ensureSetupDocument` creates `{ configured: false }` if absent. The setup wizard seeds host/port/creds/client_id; the Settings page/API (`PUT /api/settings/mqtt`) can update host/port/user/pass, topics, QoS, and marks `configured=true`. Stored values override env defaults and are applied on every boot/reconnect.
 
 `sensors` (unique index on `topic`)
 - Shape: `_id` (ObjectId), `name`, `topic` (unique), `unit`, `icon`, `type`, `description`, `threshold` (number or null), `control_topic` (string or null), `created_at` (Date), `updated_at` (Date).

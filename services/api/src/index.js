@@ -8,6 +8,7 @@ import { startBridge, syncSensorTopics } from './mqttBridge.js';
 import authRoutes from './routes/auth.js';
 import messagesRoutes from './routes/messages.js';
 import sensorsRoutes from './routes/sensors.js';
+import settingsRoutes from './routes/settings.js';
 import setupRoutes from './routes/setup.js';
 import statusRoutes from './routes/status.js';
 import { ensureDefaultAdmin } from './services/userService.js';
@@ -25,12 +26,15 @@ async function bootstrap() {
     console.warn('Setup non completato: vai su /setup.html per configurare admin e MQTT');
   } else {
     const mqttConfig = { ...config.mqtt };
-    if (settings.mqtt_host) mqttConfig.host = settings.mqtt_host;
-    if (settings.mqtt_port) mqttConfig.port = settings.mqtt_port;
-    if (settings.mqtt_username) mqttConfig.username = settings.mqtt_username;
-    if (settings.mqtt_password) mqttConfig.password = settings.mqtt_password;
-    if (settings.mqtt_client_id) mqttConfig.clientId = settings.mqtt_client_id;
-    if (settings.mqtt_subscribe_topic) mqttConfig.subscribeTopic = settings.mqtt_subscribe_topic;
+    if (settings.mqtt_host !== undefined) mqttConfig.host = settings.mqtt_host;
+    if (settings.mqtt_port !== undefined) mqttConfig.port = settings.mqtt_port;
+    if (settings.mqtt_username !== undefined) mqttConfig.username = settings.mqtt_username;
+    if (settings.mqtt_password !== undefined) mqttConfig.password = settings.mqtt_password;
+    if (settings.mqtt_client_id !== undefined) mqttConfig.clientId = settings.mqtt_client_id;
+    if (settings.mqtt_subscribe_topic !== undefined) mqttConfig.subscribeTopic = settings.mqtt_subscribe_topic;
+    if (settings.mqtt_publish_topic !== undefined) mqttConfig.publishTopic = settings.mqtt_publish_topic;
+    if (settings.mqtt_control_topic !== undefined) mqttConfig.controlTopic = settings.mqtt_control_topic;
+    if (settings.mqtt_qos !== undefined && settings.mqtt_qos !== null) mqttConfig.qos = settings.mqtt_qos;
     config.mqtt = mqttConfig;
     startBridge(mqttConfig);
     const sensors = await listSensors();
@@ -55,6 +59,7 @@ async function bootstrap() {
   app.use('/api/status', statusRoutes);
   app.use('/api/messages', messagesRoutes);
   app.use('/api/sensors', sensorsRoutes);
+  app.use('/api/settings', settingsRoutes);
   app.use('/api/setup', setupRoutes);
 
   // Fallback error handler minimale
